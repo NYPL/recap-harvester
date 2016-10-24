@@ -18,19 +18,29 @@ import com.recap.models.Bib;
 import com.recap.models.SubField;
 import com.recap.models.VarField;
 import com.recap.xml.models.*;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 
 
-public class Processor {
+public class RecapXmlProcessor implements Processor {
+
+	@Override
+	public void process(Exchange exchange) throws Exception {
+		String xml = (String) exchange.getIn().getBody();
+		BibRecord bibRecord = getBibRecord(xml);
+		exchange.getIn().setBody(bibRecord);
+		System.out.println();
+
+	}
 	
-	private static Logger logger = Logger.getLogger(Processor.class);
+	private static Logger logger = Logger.getLogger(RecapXmlProcessor.class);
 	
-	public List<BibRecord> getBibRecords(String xmlContents) throws JAXBException{
-		JAXBContext jaxbContext = JAXBContext.newInstance(BibRecords.class);
+	public BibRecord getBibRecord(String bibRecordXML) throws JAXBException{
+		JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
 		Unmarshaller UnMarshaller = jaxbContext.createUnmarshaller();
-		BibRecords bibRecords = (BibRecords) UnMarshaller.unmarshal(new StringReader(xmlContents));
-		List<BibRecord> listBibRecords = ((BibRecords) bibRecords).getBibRecords();
-		return listBibRecords;
+		BibRecord bibRecord = (BibRecord) UnMarshaller.unmarshal(new StringReader(bibRecordXML));
+		return bibRecord;
 	}
 	
 	public Bib getBibFromBibRecord(BibRecord bibRecord) throws Exception{
@@ -81,5 +91,5 @@ public class Processor {
 		}
 		return jsonBibs;
 	}
-	
+
 }

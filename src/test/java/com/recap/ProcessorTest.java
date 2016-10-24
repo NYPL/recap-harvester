@@ -2,12 +2,11 @@ package com.recap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recap.models.Bib;
-import com.recap.updater.Processor;
+import com.recap.updater.RecapXmlProcessor;
 import com.recap.xml.models.BibRecord;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -17,15 +16,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
-
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
 public class ProcessorTest {
 
     private static Logger logger = Logger.getLogger(ProcessorTest.class);
-    private Processor processor = new Processor();
+    private RecapXmlProcessor processor = new RecapXmlProcessor();
 
     @Test
     public void readXMLFileContents() throws IOException, URISyntaxException {
@@ -43,7 +40,7 @@ public class ProcessorTest {
         File file = new File(resource.toURI());
         String xmlFileContents = FileUtils.readFileToString(file);
 
-        bibRecords = processor.getBibRecords(xmlFileContents);
+        bibRecords = processor.getBibRecord(xmlFileContents);
         System.out.println("Total BibRecords - " + bibRecords.size());
         assertTrue(bibRecords.size() >= 1);
     }
@@ -55,7 +52,7 @@ public class ProcessorTest {
         File file = new File(resource.toURI());
         String xmlFileContents = FileUtils.readFileToString(file);
 
-        bibRecords = processor.getBibRecords(xmlFileContents);
+        bibRecords = processor.getBibRecord(xmlFileContents);
         System.out.println("Total BibRecords - " + bibRecords.size());
         assertTrue(bibRecords.size() >= 1);
 
@@ -72,7 +69,7 @@ public class ProcessorTest {
         File file = new File(resource.toURI());
         String xmlFileContents = FileUtils.readFileToString(file);
 
-        bibRecords = processor.getBibRecords(xmlFileContents);
+        bibRecords = processor.getBibRecord(xmlFileContents);
         System.out.println("Total BibRecords - " + bibRecords.size());
         assertTrue(bibRecords.size() >= 1);
 

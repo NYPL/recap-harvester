@@ -1,5 +1,6 @@
 package com.recap;
 
+import com.recap.updater.RecapXmlProcessor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
@@ -22,8 +23,11 @@ public class CamelProcessorTest extends BaseTestCase {
         camelContext.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("file:" + scsbexportstaging + "?move=.done")
-                .process(new EmptyProcessor());
+                from("file:" + scsbexportstaging)
+                        .split()
+                        .tokenizeXML("bibRecord")
+
+                .process(new RecapXmlProcessor());
             }
         });
 
