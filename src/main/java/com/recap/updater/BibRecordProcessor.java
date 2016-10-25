@@ -28,6 +28,7 @@ public class BibRecordProcessor implements Processor {
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		String xml = (String) exchange.getIn().getBody();
+		System.out.println(xml);
 		BibRecord bibRecord = getBibRecord(xml);
 		exchange.getIn().setBody(bibRecord);
 	}

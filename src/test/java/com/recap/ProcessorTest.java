@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,11 +36,13 @@ public class ProcessorTest extends BaseTestCase{
     
     @Autowired
     private CamelContext camelContext;
+    
+    @Value("${scsbexportstaging.location}")
+    private String xmlFileLocation;
 
     @Test
     public void readXMLFileContents() throws IOException, URISyntaxException {
-        URL resource = getClass().getResource("onerecord.xml");
-        File file = new File(resource.toURI());
+        File file = new File(xmlFileLocation + "/onerecord.xml");
         String xmlFileContents = FileUtils.readFileToString(file, "UTF-8");
 
         assertNotNull(xmlFileContents);
@@ -47,16 +50,12 @@ public class ProcessorTest extends BaseTestCase{
 
     @Test
     public void testIfBibRecordIsReturned() throws Exception {
-        BibRecord bibRecord;
-        URL resource = getClass().getResource("onerecord.xml");
-        File file = new File(resource.toURI());
-        //String xmlFileContent = FileUtils.readFileToString(file, "UTF-8");
         camelContext.addRoutes(new RouteBuilder() {
 			
 			@Override
 			public void configure() throws Exception {
-				from("file:" + file.getCanonicalPath() + "&noop=true")
-				.split().tokenize("bibRecord")
+				from("file:" + xmlFileLocation + "?fileName=onerecord.xml&noop=true")
+				.split().tokenizeXML("bibRecord")
 				.process(new BibRecordProcessor())
 				.process(new BibProcessor())
 				.process(new BibJsonProcessor());
