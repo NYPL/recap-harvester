@@ -6,6 +6,7 @@ import java.util.Map;
 public class Bib {
 	
 	private String id;
+	private String nyplSource;
 	private String updatedDate;
 	private String createdDate;
 	private Boolean deleted;
@@ -22,6 +23,14 @@ public class Bib {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getNyplSource() {
+		return nyplSource;
+	}
+
+	public void setNyplSource(String nyplSource) {
+		this.nyplSource = nyplSource;
 	}
 
 	public String getUpdatedDate() {

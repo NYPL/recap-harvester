@@ -1,6 +1,5 @@
 package com.recap.updater;
 
-import java.io.StringReader;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -8,46 +7,34 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.recap.models.Bib;
-import com.recap.models.SubField;
-import com.recap.models.VarField;
-import com.recap.xml.models.*;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 
+import com.recap.models.Bib;
+import com.recap.models.SubField;
+import com.recap.models.VarField;
+import com.recap.xml.models.BibRecord;
+import com.recap.xml.models.DataFieldType;
+import com.recap.xml.models.RecordType;
+import com.recap.xml.models.SubfieldatafieldType;
 
-public class RecapXmlProcessor implements Processor {
-
+public class BibProcessor implements Processor{
+	
+	private static Logger logger = Logger.getLogger(BibProcessor.class);
+	
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		String xml = (String) exchange.getIn().getBody();
-		BibRecord bibRecord = getBibRecord(xml);
-		exchange.getIn().setBody(bibRecord);
-		System.out.println();
-
-	}
-	
-	private static Logger logger = Logger.getLogger(RecapXmlProcessor.class);
-	
-	public BibRecord getBibRecord(String bibRecordXML) throws JAXBException{
-		JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
-		Unmarshaller UnMarshaller = jaxbContext.createUnmarshaller();
-		BibRecord bibRecord = (BibRecord) UnMarshaller.unmarshal(new StringReader(bibRecordXML));
-		return bibRecord;
+		BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
+		Bib bib = getBibFromBibRecord(bibRecord);
+		exchange.getIn().setBody(bib);
 	}
 	
 	public Bib getBibFromBibRecord(BibRecord bibRecord) throws Exception{
 		try{
 			Bib bib = new Bib();
-			bib.setId(bibRecord.getBib().getOwningInstitutionId() + "-" + 
-			bibRecord.getBib().getOwningInstitutionBibId());
+			bib.setId(bibRecord.getBib().getOwningInstitutionBibId());
+			bib.setNyplSource("ReCAP - " + bibRecord.getBib().getOwningInstitutionId());
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			bib.setUpdatedDate(dateFormat.format(new Date()));
@@ -82,14 +69,6 @@ public class RecapXmlProcessor implements Processor {
 			logger.error("Error occurred while setting Bib properties - ", e);
 			throw new Exception(e.getMessage());
 		}
-	}
-	
-	public List<String> getListOfBibsAsJSON(List<Bib> bibs) throws JsonProcessingException {
-		List<String> jsonBibs = new ArrayList<>();
-		for(Bib bib : bibs){
-			jsonBibs.add(new ObjectMapper().writeValueAsString(bib));
-		}
-		return jsonBibs;
 	}
 
 }

@@ -1,15 +1,14 @@
 package com.recap;
 
-import com.recap.updater.RecapXmlProcessor;
+import com.recap.updater.BibJsonProcessor;
+import com.recap.updater.BibProcessor;
+import com.recap.updater.BibRecordProcessor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-/**
- * Created by peris on 10/21/16.
- */
 public class CamelProcessorTest extends BaseTestCase {
 
     @Autowired
@@ -23,11 +22,12 @@ public class CamelProcessorTest extends BaseTestCase {
         camelContext.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("file:" + scsbexportstaging)
+                from("file:" + scsbexportstaging + "?fileName=onerecord.xml&noop=true")
                         .split()
                         .tokenizeXML("bibRecord")
-
-                .process(new RecapXmlProcessor());
+                .process(new BibRecordProcessor())
+                .process(new BibProcessor())
+                .process(new BibJsonProcessor());
             }
         });
 
