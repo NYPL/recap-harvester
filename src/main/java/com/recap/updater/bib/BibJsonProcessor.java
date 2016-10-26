@@ -1,4 +1,4 @@
-package com.recap.updater;
+package com.recap.updater.bib;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -14,7 +14,6 @@ public class BibJsonProcessor implements Processor{
 		Bib bib = (Bib) exchange.getIn().getBody();	
 		String bibInJson = getBibAsJSON(bib);
 		exchange.getIn().setBody(bibInJson);
-		System.out.println(bibInJson);
 	}
 	
 	

@@ -7,6 +7,7 @@ public class Bib {
 	
 	private String id;
 	private String nyplSource;
+	private String nyplType;
 	private String updatedDate;
 	private String createdDate;
 	private Boolean deleted;
@@ -31,6 +32,14 @@ public class Bib {
 
 	public void setNyplSource(String nyplSource) {
 		this.nyplSource = nyplSource;
+	}
+
+	public String getNyplType() {
+		return nyplType;
+	}
+
+	public void setNyplType(String nyplType) {
+		this.nyplType = nyplType;
 	}
 
 	public String getUpdatedDate() {

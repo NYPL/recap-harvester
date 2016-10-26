@@ -2,9 +2,10 @@ package com.recap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recap.models.Bib;
-import com.recap.updater.BibJsonProcessor;
-import com.recap.updater.BibProcessor;
-import com.recap.updater.BibRecordProcessor;
+import com.recap.updater.bib.BibJsonProcessor;
+import com.recap.updater.bib.BibProcessor;
+import com.recap.updater.bib.BibPublisher;
+import com.recap.updater.bib.BibRecordProcessor;
 import com.recap.xml.models.BibRecord;
 
 import org.apache.camel.CamelContext;
@@ -55,13 +56,16 @@ public class ProcessorTest extends BaseTestCase{
 			@Override
 			public void configure() throws Exception {
 				from("file:" + xmlFileLocation + "?fileName=onerecord.xml&noop=true")
-				.split().tokenizeXML("bibRecord")
+				.split()
+				.tokenizeXML("bibRecord")
 				.process(new BibRecordProcessor())
 				.process(new BibProcessor())
 				.process(new BibJsonProcessor());
+				//.process(new BibPublisher());
 			}
 		});
         
+        Thread.sleep(30000);
        // assertTrue(bibRecord != null);
     }
 

@@ -1,4 +1,4 @@
-package com.recap.updater;
+package com.recap.updater.bib;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -33,8 +33,15 @@ public class BibProcessor implements Processor{
 	public Bib getBibFromBibRecord(BibRecord bibRecord) throws Exception{
 		try{
 			Bib bib = new Bib();
-			bib.setId(bibRecord.getBib().getOwningInstitutionBibId());
-			bib.setNyplSource("ReCAP - " + bibRecord.getBib().getOwningInstitutionId());
+			String bibId;
+			String originalBibIdFromRecap = bibRecord.getBib().getOwningInstitutionBibId();
+			if(originalBibIdFromRecap.startsWith(".")){
+				bibId = originalBibIdFromRecap.substring(2, originalBibIdFromRecap.length() - 1);
+			}else
+				bibId = bibRecord.getBib().getOwningInstitutionBibId();
+			bib.setId(bibId);
+			bib.setNyplSource("recap-" + bibRecord.getBib().getOwningInstitutionId());
+			bib.setNyplType("bib");
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			bib.setUpdatedDate(dateFormat.format(new Date()));
