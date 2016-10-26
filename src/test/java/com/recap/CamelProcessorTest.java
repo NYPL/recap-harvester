@@ -1,6 +1,7 @@
 package com.recap;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.ShutdownRunningTask;
 import org.apache.camel.builder.RouteBuilder;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +33,11 @@ public class CamelProcessorTest extends BaseTestCase {
 	
     @Test
     public void processSCSBExport() throws Exception {
+   
         camelContext.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("file:" + scsbexportstaging + "?fileName=onerecord.xml&noop=true")
+                from("file:" + scsbexportstaging + "?fileName=recapSample.xml&noop=true")
                         .split()
                         .tokenizeXML("bibRecord")
                 .process(new BibRecordProcessor())
@@ -46,7 +48,7 @@ public class CamelProcessorTest extends BaseTestCase {
             }
         });
 
-        Thread.sleep(3000);
+        Thread.sleep(300000);
 
     }
 }
