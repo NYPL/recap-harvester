@@ -25,42 +25,23 @@ public class BibPublisher implements Processor{
 	
 	private String nyplApiForBibs;
 	
-	private TokenProperties tokenPropertiesNYPL;
+	private TokenProperties tokenProperties;
 	
-	public BibPublisher(String nyplApiForBibs, OAuth2Client nyplOAuth2Client, 
-			TokenProperties tokenPropertiesNYPL) {
+	public BibPublisher(String nyplApiForBibs, OAuth2Client nyplOAuth2Client,
+			TokenProperties tokenProperties) {
 		this.nyplApiForBibs = nyplApiForBibs;
 		this.nyplOAuthClient = nyplOAuth2Client;
-		this.tokenPropertiesNYPL = tokenPropertiesNYPL;
+		this.tokenProperties = tokenProperties;
 	}
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		String bibContent = (String) exchange.getIn().getBody();
-		postBibInfoToApi(nyplApiForBibs, bibContent, tokenPropertiesNYPL, nyplOAuthClient);
+		postBibInfoToApi(tokenProperties, nyplApiForBibs, bibContent, nyplOAuthClient);
 		System.out.println(bibContent);
 	}
 	
-	public void postBibInfoToApi(String bibsApi, String bibJson, TokenProperties nyplTokenProperties, 
-			OAuth2Client nyplOAuthClient) throws URISyntaxException{
-		Date currentDate = new Date();
-		int minutes = currentDate.getMinutes();
-		currentDate.setMinutes(minutes + 5);
-		logger.info("Going to send bib to API Service at - "
-				+ new SimpleDateFormat("yyyy-MM-dd").format(currentDate));
-		logger.info("Token expires - " + nyplTokenProperties.getTokenExpiration());
-		if (currentDate.before(nyplTokenProperties.getTokenExpiration())) {
-			logger.info(nyplTokenProperties.getTokenValue());
-			callBibApi(nyplTokenProperties, bibsApi, bibJson, nyplOAuthClient);
-		} else {
-			logger.info("Requesting new nypl token");
-			nyplTokenProperties = nyplOAuthClient.getTokenAccessProperties();
-			logger.info(nyplTokenProperties.getTokenValue());
-			callBibApi(nyplTokenProperties, bibsApi, bibJson, nyplOAuthClient);
-		}
-	}
-	
-	public void callBibApi(TokenProperties nyplTokenProperties, String bibsApi, String bibsJson, 
+	public void postBibInfoToApi(TokenProperties nyplTokenProperties, String bibsApi, String bibsJson, 
 			OAuth2Client nyplOAuthClient) throws URISyntaxException{
         String tokenValue = nyplTokenProperties.getTokenValue();
         Date tokenExpiration = nyplTokenProperties.getTokenExpiration();

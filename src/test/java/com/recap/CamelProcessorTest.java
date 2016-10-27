@@ -44,7 +44,7 @@ public class CamelProcessorTest extends BaseTestCase {
                 .process(new BibProcessor())
                 .process(new BibJsonProcessor())
                 .process(new BibPublisher(nyplApiForBibs, nyplOAuth2Client, 
-                		nyplOAuth2Client.getTokenAccessProperties()));
+                		nyplOAuth2Client.createAndGetTokenAccessProperties()));
             }
         });
 

@@ -36,7 +36,7 @@ public class OAuth2Client {
 		return oAuth2RestTemplate;
 	}
 	
-	public TokenProperties getTokenAccessProperties(){
+	public TokenProperties createAndGetTokenAccessProperties(){
         OAuth2RestTemplate oAuth2RestTemplate = getOAuth2RestTemplate();
         OAuth2AccessToken oAuth2AccessToken = oAuth2RestTemplate.getAccessToken();
         TokenProperties tokenProperties = new TokenProperties();
