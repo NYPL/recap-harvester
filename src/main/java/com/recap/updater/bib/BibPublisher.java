@@ -4,6 +4,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -14,8 +16,11 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.recap.utils.models.OAuth2Client;
-import com.recap.utils.models.TokenProperties;
+import com.recap.constants.Constants;
+import com.recap.utils.NyplApiUtil;
+import com.recap.utils.OAuth2Client;
+import com.recap.utils.TokenProperties;
+import com.recap.xml.models.BibRecord;
 
 public class BibPublisher implements Processor{
 	
@@ -26,19 +31,21 @@ public class BibPublisher implements Processor{
 	private String nyplApiForBibs;
 	
 	private TokenProperties tokenProperties;
-	
-	public BibPublisher(String nyplApiForBibs, OAuth2Client nyplOAuth2Client,
-			TokenProperties tokenProperties) {
-		this.nyplApiForBibs = nyplApiForBibs;
-		this.nyplOAuthClient = nyplOAuth2Client;
-		this.tokenProperties = tokenProperties;
-	}
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		String bibContent = (String) exchange.getIn().getBody();
+		Map<String, Object> jsonBibApiUtilAndBibRecord = (Map<String, Object>) exchange.getIn().getBody();
+		String bibContent = (String) jsonBibApiUtilAndBibRecord.get(Constants.BIB_JSON);
+		NyplApiUtil nyplApiUtil = (NyplApiUtil) jsonBibApiUtilAndBibRecord.get(Constants.API_UTIL);
+		nyplOAuthClient = nyplApiUtil.getoAuth2Client();
+		nyplApiForBibs = nyplApiUtil.getNyplApiForBibs();
+		tokenProperties = nyplApiUtil.getTokenProperties();
 		postBibInfoToApi(tokenProperties, nyplApiForBibs, bibContent, nyplOAuthClient);
 		System.out.println(bibContent);
+		Map<String, Object> bibRecordMap = new HashMap<>();
+		BibRecord bibRecord = (BibRecord) jsonBibApiUtilAndBibRecord.get(Constants.BIB_RECORD);
+		bibRecordMap.put(Constants.BIB_RECORD, bibRecord);
+		exchange.getIn().setBody(bibRecordMap);
 	}
 	
 	public void postBibInfoToApi(TokenProperties nyplTokenProperties, String bibsApi, String bibsJson, 

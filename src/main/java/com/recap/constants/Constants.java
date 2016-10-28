@@ -1,0 +1,11 @@
+package com.recap.constants;
+
+public class Constants {
+	
+	public static final String BIB_RECORD = "bibRecord";
+	public static final String BIB = "bib";
+	public static final String HOLDINGS = "holdings";
+	public static final String BIB_JSON = "bibJson";
+	public static final String API_UTIL = "apiUtil";
+
+}

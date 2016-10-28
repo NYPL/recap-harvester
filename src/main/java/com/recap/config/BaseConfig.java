@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
-import com.recap.utils.models.OAuth2Client;
+import com.recap.utils.OAuth2Client;
 
 @Configuration
 @PropertySource("classpath:application.properties")

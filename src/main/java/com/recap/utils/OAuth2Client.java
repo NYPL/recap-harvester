@@ -1,4 +1,4 @@
-package com.recap.utils.models;
+package com.recap.utils;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;

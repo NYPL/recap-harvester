@@ -1,4 +1,4 @@
-package com.recap.utils.models;
+package com.recap.utils;
 
 import java.util.Date;
 

@@ -4,13 +4,16 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.log4j.Logger;
 
+import com.recap.constants.Constants;
 import com.recap.models.Bib;
 import com.recap.models.SubField;
 import com.recap.models.VarField;
@@ -27,7 +30,10 @@ public class BibProcessor implements Processor{
 	public void process(Exchange exchange) throws Exception {
 		BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
 		Bib bib = getBibFromBibRecord(bibRecord);
-		exchange.getIn().setBody(bib);
+		Map<String, Object> bibAndBibRecord = new HashMap<>();
+		bibAndBibRecord.put(Constants.BIB, bib);
+		bibAndBibRecord.put(Constants.BIB_RECORD, bibRecord);
+		exchange.getIn().setBody(bibAndBibRecord);
 	}
 	
 	public Bib getBibFromBibRecord(BibRecord bibRecord) throws Exception{

@@ -1,27 +1,28 @@
 package com.recap.processor;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.recap.config.BaseConfig;
+import com.recap.constants.Constants;
 import com.recap.updater.bib.BibJsonProcessor;
 import com.recap.updater.bib.BibProcessor;
 import com.recap.updater.bib.BibPublisher;
 import com.recap.updater.bib.BibRecordProcessor;
-import com.recap.utils.models.OAuth2Client;
-import com.recap.utils.models.TokenProperties;
+import com.recap.updater.holdings.HoldingsProcessor;
+import com.recap.utils.NyplApiUtil;
+import com.recap.utils.OAuth2Client;
+import com.recap.utils.TokenProcessor;
+import com.recap.utils.TokenProperties;
 
 @Component
 public class ReCapXmlRouteBuilder implements RoutesBuilder {
@@ -37,8 +38,6 @@ public class ReCapXmlRouteBuilder implements RoutesBuilder {
 	OAuth2Client nyplOAuth2Client = (OAuth2Client) context.getBean("oAuth2ClientNYPL");
 	
 	TokenProperties tokenProperties = nyplOAuth2Client.createAndGetTokenAccessProperties();
-	
-	private static Logger logger = Logger.getLogger(ReCapXmlRouteBuilder.class);
 
 	@Override
 	public void addRoutesToCamelContext(CamelContext camelContext) throws Exception {
@@ -55,22 +54,28 @@ public class ReCapXmlRouteBuilder implements RoutesBuilder {
 					
 					@Override
 					public void process(Exchange exchange) throws Exception {
-						Date currentDate = new Date();
-						int minutes = currentDate.getMinutes();
-						currentDate.setMinutes(minutes + 5);
-						if (!currentDate.before(tokenProperties.getTokenExpiration())) {
-							logger.info("Requesting new nypl token");
-							tokenProperties = nyplOAuth2Client.createAndGetTokenAccessProperties();
-						}
-						logger.info("Going to send bib to API Service at - "
-								+ new SimpleDateFormat("yyyy-MM-dd").format(currentDate));
-						logger.info("Token expires - " + tokenProperties.getTokenExpiration());
-						logger.info(tokenProperties.getTokenValue());
+						exchange = setApiUtilInExchange(exchange);
 					}
 				})
-				.process(new BibPublisher(nyplApiForBibs, nyplOAuth2Client, tokenProperties));
+				.process(new BibPublisher())
+				.process(new HoldingsProcessor());
 			}
 		});
+	}
+	
+	public Exchange setApiUtilInExchange(Exchange exchange) throws Exception{
+		tokenProperties = new TokenProcessor().validateAndReturnTokenProperties(
+				tokenProperties, nyplOAuth2Client);
+		NyplApiUtil apiUtil = new NyplApiUtil();
+		apiUtil.setNyplApiForBibs(nyplApiForBibs);
+		apiUtil.setoAuth2Client(nyplOAuth2Client);
+		apiUtil.setTokenProperties(tokenProperties);
+		Map<String, Object> exchangeContents = (Map<String, Object>) exchange.getIn()
+				.getBody();
+		exchangeContents.put(Constants.API_UTIL, apiUtil);
+		exchange.getIn().setBody(exchangeContents);
+		
+		return exchange;
 	}
 
 }
