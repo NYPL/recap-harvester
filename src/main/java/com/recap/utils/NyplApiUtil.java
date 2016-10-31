@@ -7,6 +7,8 @@ public class NyplApiUtil{
 	private TokenProperties tokenProperties;
 	
 	private String nyplApiForBibs;
+	
+	private String nyplApiForItems;
 
 	public OAuth2Client getoAuth2Client() {
 		return oAuth2Client;
@@ -30,6 +32,14 @@ public class NyplApiUtil{
 
 	public void setNyplApiForBibs(String nyplApiForBibs) {
 		this.nyplApiForBibs = nyplApiForBibs;
+	}
+
+	public String getNyplApiForItems() {
+		return nyplApiForItems;
+	}
+
+	public void setNyplApiForItems(String nyplApiForItems) {
+		this.nyplApiForItems = nyplApiForItems;
 	}
 	
 

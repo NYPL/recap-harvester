@@ -19,7 +19,7 @@ import com.recap.updater.bib.BibJsonProcessor;
 import com.recap.updater.bib.BibProcessor;
 import com.recap.updater.bib.BibPublisher;
 import com.recap.updater.bib.BibRecordProcessor;
-import com.recap.updater.holdings.HoldingsProcessor;
+import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProcessor;
@@ -56,7 +56,7 @@ public class CamelProcessorTest extends BaseTestCase {
 							public void process(Exchange exchange) throws Exception {
 								exchange = setApiUtilInExchange(exchange);
 							}
-						}).process(new BibPublisher()).process(new HoldingsProcessor());
+						}).process(new BibPublisher()).process(new HoldingListProcessor());
 			}
 		});
 

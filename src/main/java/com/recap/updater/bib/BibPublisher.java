@@ -34,18 +34,15 @@ public class BibPublisher implements Processor{
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		Map<String, Object> jsonBibApiUtilAndBibRecord = (Map<String, Object>) exchange.getIn().getBody();
-		String bibContent = (String) jsonBibApiUtilAndBibRecord.get(Constants.BIB_JSON);
-		NyplApiUtil nyplApiUtil = (NyplApiUtil) jsonBibApiUtilAndBibRecord.get(Constants.API_UTIL);
+		Map<String, Object> exchangeContents = (Map<String, Object>) exchange.getIn().getBody();
+		String bibContent = (String) exchangeContents.get(Constants.BIB_JSON);
+		NyplApiUtil nyplApiUtil = (NyplApiUtil) exchangeContents.get(Constants.API_UTIL);
 		nyplOAuthClient = nyplApiUtil.getoAuth2Client();
 		nyplApiForBibs = nyplApiUtil.getNyplApiForBibs();
 		tokenProperties = nyplApiUtil.getTokenProperties();
 		postBibInfoToApi(tokenProperties, nyplApiForBibs, bibContent, nyplOAuthClient);
 		System.out.println(bibContent);
-		Map<String, Object> bibRecordMap = new HashMap<>();
-		BibRecord bibRecord = (BibRecord) jsonBibApiUtilAndBibRecord.get(Constants.BIB_RECORD);
-		bibRecordMap.put(Constants.BIB_RECORD, bibRecord);
-		exchange.getIn().setBody(bibRecordMap);
+		exchange.getIn().setBody(exchangeContents);
 	}
 	
 	public void postBibInfoToApi(TokenProperties nyplTokenProperties, String bibsApi, String bibsJson, 
