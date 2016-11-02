@@ -18,7 +18,9 @@ import com.recap.models.Bib;
 import com.recap.models.SubField;
 import com.recap.models.VarField;
 import com.recap.xml.models.BibRecord;
+import com.recap.xml.models.ControlFieldType;
 import com.recap.xml.models.DataFieldType;
+import com.recap.xml.models.LeaderFieldType;
 import com.recap.xml.models.RecordType;
 import com.recap.xml.models.SubfieldatafieldType;
 
@@ -75,6 +77,17 @@ public class BibProcessor implements Processor{
 					varFieldObj.setSubFields(subFieldObjects);
 					varFieldObjects.add(varFieldObj);
 				}
+				VarField varFieldObjLeader = new VarField();
+				varFieldObjLeader.setFieldTag("_");
+				varFieldObjLeader.setContent(bibRecordType.get(0).getLeader().getValue());
+				List<ControlFieldType> controlFields = bibRecordType.get(0).getControlfield();
+				for(ControlFieldType controlField : controlFields){
+					VarField varFieldObjControlField = new VarField();
+					varFieldObjControlField.setMarcTag(controlField.getTag());
+					varFieldObjControlField.setContent(controlField.getValue());
+					varFieldObjects.add(varFieldObjControlField);
+				}
+				varFieldObjects.add(varFieldObjLeader);
 				bib.setVarFields(varFieldObjects);
 			}
 			return bib;

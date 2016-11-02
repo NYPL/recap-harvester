@@ -9,6 +9,7 @@ public class VarField {
 	private String ind1;
 	private String ind2;
 	private List<SubField> subFields;
+	private String content;
 	
 	public String getFieldTag() {
 		return fieldTag;
@@ -39,6 +40,12 @@ public class VarField {
 	}
 	public void setSubFields(List<SubField> subFields) {
 		this.subFields = subFields;
+	}
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 }

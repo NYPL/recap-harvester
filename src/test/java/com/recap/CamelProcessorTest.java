@@ -20,6 +20,8 @@ import com.recap.updater.bib.BibProcessor;
 import com.recap.updater.bib.BibPublisher;
 import com.recap.updater.bib.BibRecordProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
+import com.recap.updater.holdings.ItemsProcessor;
+import com.recap.updater.holdings.ItemsPublisher;
 import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProcessor;
@@ -41,6 +43,9 @@ public class CamelProcessorTest extends BaseTestCase {
 
 	@Value("${nyplApiForBibs}")
 	private String nyplApiForBibs;
+	
+	@Value("${nyplApiForItems}")
+	private String nyplApiForItems;
 
 	@Test
 	public void processSCSBExport() throws Exception {
@@ -48,15 +53,28 @@ public class CamelProcessorTest extends BaseTestCase {
 		camelContext.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				from("file:" + scsbexportstaging + "?fileName=recapSample.xml&noop=true").split()
-						.tokenizeXML("bibRecord").process(new BibRecordProcessor()).process(new BibProcessor())
-						.process(new BibJsonProcessor()).process(new Processor() {
+				from("file:" + scsbexportstaging + "?fileName=onerecord.xml&noop=true")
+				.split()
+				.tokenizeXML("bibRecord")
+				.process(new BibRecordProcessor()).process(new BibProcessor())
+				.process(new BibJsonProcessor()).process(new Processor() {
 
-							@Override
-							public void process(Exchange exchange) throws Exception {
-								exchange = setApiUtilInExchange(exchange);
-							}
-						}).process(new BibPublisher()).process(new HoldingListProcessor());
+					@Override
+					public void process(Exchange exchange) throws Exception {
+						exchange = setNyplApiUtilInExchange(exchange);
+					}
+				})
+				.process(new BibPublisher())
+				.process(new HoldingListProcessor())
+				.process(new ItemsProcessor())
+				.process(new Processor() {
+	
+					@Override
+					public void process(Exchange exchange) throws Exception {
+						exchange = setNyplApiUtilInExchange(exchange);
+					}
+				})
+				.process(new ItemsPublisher());
 			}
 		});
 
@@ -64,18 +82,17 @@ public class CamelProcessorTest extends BaseTestCase {
 
 	}
 	
-	public Exchange setApiUtilInExchange(Exchange exchange) throws Exception{
-		tokenProperties = new TokenProcessor().validateAndReturnTokenProperties(
-				tokenProperties, nyplOAuth2Client);
+	public Exchange setNyplApiUtilInExchange(Exchange exchange) throws Exception {
+		tokenProperties = new TokenProcessor().validateAndReturnTokenProperties(tokenProperties, nyplOAuth2Client);
 		NyplApiUtil apiUtil = new NyplApiUtil();
 		apiUtil.setNyplApiForBibs(nyplApiForBibs);
+		apiUtil.setNyplApiForItems(nyplApiForItems);
 		apiUtil.setoAuth2Client(nyplOAuth2Client);
 		apiUtil.setTokenProperties(tokenProperties);
-		Map<String, Object> exchangeContents = (Map<String, Object>) exchange.getIn()
-				.getBody();
+		Map<String, Object> exchangeContents = (Map<String, Object>) exchange.getIn().getBody();
 		exchangeContents.put(Constants.API_UTIL, apiUtil);
 		exchange.getIn().setBody(exchangeContents);
-		
+
 		return exchange;
 	}
 }
