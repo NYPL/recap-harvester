@@ -49,7 +49,7 @@ public class ReCapXmlRouteBuilder implements RoutesBuilder {
 		camelContext.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				from("file:" + scsbexportstaging + "?fileName=recapSample.xml&noop=true")
+				from("file:" + scsbexportstaging + "?fileName=recapSampleForCUL.xml&noop=true")
 				.split()
 				.tokenizeXML("bibRecord")
 				.process(new BibRecordProcessor()).process(new BibProcessor())

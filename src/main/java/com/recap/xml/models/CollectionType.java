@@ -1,10 +1,9 @@
 
 package com.recap.xml.models;
 
-import org.apache.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
+
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -15,6 +14,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -44,7 +46,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "collection")
 public class CollectionType {
 
-    private static final Logger LOG = Logger.getLogger(CollectionType.class);
+    private static final Logger LOG = LogManager.getLogger(CollectionType.class);
 
     @XmlElement(nillable = true)
     protected List<RecordType> record;

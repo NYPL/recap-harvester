@@ -9,6 +9,8 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.recap.constants.Constants;
+import com.recap.models.Bib;
 import com.recap.models.Item;
 import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
@@ -31,6 +34,8 @@ public class ItemsPublisher implements Processor {
 	private String nyplApiForItems;
 
 	private TokenProperties tokenProperties;
+	
+	private static final Logger logger = LogManager.getLogger(ItemsPublisher.class);
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
@@ -41,6 +46,8 @@ public class ItemsPublisher implements Processor {
 		nyplApiForItems = nyplApiUtil.getNyplApiForItems();
 		tokenProperties = nyplApiUtil.getTokenProperties();
 		postItemInfoToApi(tokenProperties, nyplApiForItems, items, nyplOAuthClient);
+		logger.info("Published all the items for bibs - " + 
+						((Bib)exchangeContents.get(Constants.BIB)).getId());
 		exchange.getIn().setBody(exchangeContents);
 	}
 	
@@ -61,11 +68,15 @@ public class ItemsPublisher implements Processor {
 	        RequestEntity<String> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON)
 	        		.body(itemAsJson);
 	        System.out.println("headers - " + requestEntity.getHeaders());
-	        ResponseEntity response = nyplOAuthClient.getOAuth2RestTemplate().exchange(uri, HttpMethod.POST, 
-	        		requestEntity, String.class);
-	        System.out.println(response.getBody());
-	        System.out.println(response.getStatusCode());
-	        System.out.println(response.getHeaders());
+	        try{
+	        	ResponseEntity response = nyplOAuthClient.getOAuth2RestTemplate().exchange(uri, HttpMethod.POST, 
+		        		requestEntity, String.class);
+		        System.out.println(response.getBody());
+		        System.out.println(response.getStatusCode());
+		        System.out.println(response.getHeaders());
+	        }catch(Exception e){
+	        	logger.error("Error while calling items api - ", e);
+	        }
 		}
 	}
 

@@ -11,7 +11,8 @@ import java.util.TimeZone;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
@@ -20,13 +21,12 @@ import com.recap.models.VarField;
 import com.recap.xml.models.BibRecord;
 import com.recap.xml.models.ControlFieldType;
 import com.recap.xml.models.DataFieldType;
-import com.recap.xml.models.LeaderFieldType;
 import com.recap.xml.models.RecordType;
 import com.recap.xml.models.SubfieldatafieldType;
 
 public class BibProcessor implements Processor{
 	
-	private static Logger logger = Logger.getLogger(BibProcessor.class);
+	private static Logger logger = LogManager.getLogger(BibProcessor.class);
 	
 	@Override
 	public void process(Exchange exchange) throws Exception {
@@ -35,6 +35,7 @@ public class BibProcessor implements Processor{
 		Map<String, Object> exchangeContents = new HashMap<>();
 		exchangeContents.put(Constants.BIB, bib);
 		exchangeContents.put(Constants.BIB_RECORD, bibRecord);
+		logger.info("Processing bib - " + bib.getId());
 		exchange.getIn().setBody(exchangeContents);
 	}
 	

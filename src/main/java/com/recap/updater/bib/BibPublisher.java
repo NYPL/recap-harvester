@@ -2,14 +2,13 @@ package com.recap.updater.bib;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -20,11 +19,10 @@ import com.recap.constants.Constants;
 import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProperties;
-import com.recap.xml.models.BibRecord;
 
 public class BibPublisher implements Processor{
 	
-	private static Logger logger = Logger.getLogger(BibPublisher.class);
+	private static Logger logger = LogManager.getLogger(BibPublisher.class);
 	
 	private OAuth2Client nyplOAuthClient;
 	
@@ -59,11 +57,16 @@ public class BibPublisher implements Processor{
         RequestEntity<String> requestEntity = RequestEntity.post(uri).contentType(MediaType.APPLICATION_JSON).
         		body(bibsJson);
         System.out.println("headers - " + requestEntity.getHeaders());
-        ResponseEntity response = nyplOAuthClient.getOAuth2RestTemplate().exchange(uri, HttpMethod.POST, 
-        		requestEntity, String.class);
-        System.out.println(response.getBody());
-        System.out.println(response.getStatusCode());
-        System.out.println(response.getHeaders());
+        try{
+        	ResponseEntity response = nyplOAuthClient.getOAuth2RestTemplate().exchange(uri, HttpMethod.POST, 
+            		requestEntity, String.class);
+            System.out.println(response.getBody());
+            System.out.println(response.getStatusCode());
+            System.out.println(response.getHeaders());
+        }catch(Exception e){
+        	logger.error("Error occurred while calling bib api - ", e);
+        }
+        
 	}
 	
 	

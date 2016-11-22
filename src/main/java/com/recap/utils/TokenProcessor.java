@@ -2,17 +2,13 @@ package com.recap.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.log4j.Logger;
-
-import com.recap.constants.Constants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TokenProcessor{
 	
-	private static Logger logger = Logger.getLogger(TokenProcessor.class);
+	private static Logger logger = LogManager.getLogger(TokenProcessor.class);
 
 	public TokenProperties validateAndReturnTokenProperties(TokenProperties tokenProperties, 
 			OAuth2Client oAuth2Client) throws Exception {
