@@ -9,11 +9,11 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -35,7 +35,7 @@ public class ItemsPublisher implements Processor {
 
 	private TokenProperties tokenProperties;
 	
-	private static final Logger logger = LogManager.getLogger(ItemsPublisher.class);
+	private static final Logger logger = LoggerFactory.getLogger(ItemsPublisher.class.getName());
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
@@ -77,6 +77,7 @@ public class ItemsPublisher implements Processor {
 	        }catch(Exception e){
 	        	logger.error("Error while calling items api - ", e);
 	        }
+	        logger.info("Published item - " + item.getId());
 		}
 	}
 

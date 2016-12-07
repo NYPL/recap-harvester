@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -22,7 +22,7 @@ import com.recap.utils.TokenProperties;
 
 public class BibPublisher implements Processor{
 	
-	private static Logger logger = LogManager.getLogger(BibPublisher.class);
+	private static Logger logger = LoggerFactory.getLogger(BibPublisher.class.getName());
 	
 	private OAuth2Client nyplOAuthClient;
 	
@@ -66,6 +66,7 @@ public class BibPublisher implements Processor{
         }catch(Exception e){
         	logger.error("Error occurred while calling bib api - ", e);
         }
+        logger.info("Published bib - " + bibsJson);
         
 	}
 	

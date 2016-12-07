@@ -15,8 +15,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -46,7 +46,7 @@ import org.apache.logging.log4j.Logger;
 @XmlRootElement(name = "collection")
 public class CollectionType {
 
-    private static final Logger LOG = LogManager.getLogger(CollectionType.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CollectionType.class);
 
     @XmlElement(nillable = true)
     protected List<RecordType> record;

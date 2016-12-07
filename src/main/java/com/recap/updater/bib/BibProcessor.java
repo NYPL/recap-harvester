@@ -11,8 +11,8 @@ import java.util.TimeZone;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
@@ -26,7 +26,7 @@ import com.recap.xml.models.SubfieldatafieldType;
 
 public class BibProcessor implements Processor{
 	
-	private static Logger logger = LogManager.getLogger(BibProcessor.class);
+	private static Logger logger = LoggerFactory.getLogger(BibProcessor.class);
 	
 	@Override
 	public void process(Exchange exchange) throws Exception {

@@ -9,8 +9,8 @@ import javax.xml.bind.Unmarshaller;
 import com.recap.xml.models.*;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BibRecordProcessor implements Processor {
 
@@ -21,7 +21,7 @@ public class BibRecordProcessor implements Processor {
 		exchange.getIn().setBody(bibRecord);
 	}
 	
-	private static Logger logger = LogManager.getLogger(BibRecordProcessor.class);
+	private static Logger logger = LoggerFactory.getLogger(BibRecordProcessor.class);
 	
 	public BibRecord getBibRecord(String bibRecordXML) throws JAXBException{
 		JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
