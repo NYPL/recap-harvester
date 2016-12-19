@@ -11,6 +11,8 @@ import java.util.TimeZone;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
@@ -24,6 +26,8 @@ import com.recap.xml.models.RecordType;
 import com.recap.xml.models.SubfieldatafieldType;
 
 public class ItemsProcessor implements Processor{
+	
+	private static Logger logger = LoggerFactory.getLogger(ItemsProcessor.class);
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
@@ -33,6 +37,7 @@ public class ItemsProcessor implements Processor{
 		List<Item> items = getListItems(listHolding, bib);
 		exchangeContents.put(Constants.LIST_ITEMS, items);
 		exchange.getIn().setBody(exchangeContents);
+		logger.info("Processing items for bib - " + bib.getId());
 	}
 	
 	public List<Item> getListItems(List<Holding> listHolding, Bib bib){

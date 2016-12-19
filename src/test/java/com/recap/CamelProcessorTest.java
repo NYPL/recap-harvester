@@ -17,11 +17,10 @@ import com.recap.config.BaseConfig;
 import com.recap.constants.Constants;
 import com.recap.updater.bib.BibJsonProcessor;
 import com.recap.updater.bib.BibProcessor;
-import com.recap.updater.bib.BibPublisher;
 import com.recap.updater.bib.BibRecordProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
-import com.recap.updater.holdings.ItemsPublisher;
+import com.recap.updater.holdings.ItemsJsonProcessor;
 import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProcessor;
@@ -64,7 +63,6 @@ public class CamelProcessorTest extends BaseTestCase {
 						exchange = setNyplApiUtilInExchange(exchange);
 					}
 				})
-				.process(new BibPublisher())
 				.process(new HoldingListProcessor())
 				.process(new ItemsProcessor())
 				.process(new Processor() {
@@ -74,7 +72,7 @@ public class CamelProcessorTest extends BaseTestCase {
 						exchange = setNyplApiUtilInExchange(exchange);
 					}
 				})
-				.process(new ItemsPublisher());
+				.process(new ItemsJsonProcessor());
 			}
 		});
 

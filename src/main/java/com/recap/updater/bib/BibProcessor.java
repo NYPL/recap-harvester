@@ -32,11 +32,9 @@ public class BibProcessor implements Processor{
 	public void process(Exchange exchange) throws Exception {
 		BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
 		Bib bib = getBibFromBibRecord(bibRecord);
-		Map<String, Object> exchangeContents = new HashMap<>();
-		exchangeContents.put(Constants.BIB, bib);
-		exchangeContents.put(Constants.BIB_RECORD, bibRecord);
+
 		logger.info("Processing bib - " + bib.getId());
-		exchange.getIn().setBody(exchangeContents);
+		exchange.getIn().setBody(bib);
 	}
 	
 	public Bib getBibFromBibRecord(BibRecord bibRecord) throws Exception{

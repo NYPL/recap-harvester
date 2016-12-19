@@ -3,6 +3,7 @@ package com.recap.updater.holdings;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProperties;
 
-public class ItemsPublisher implements Processor {
+public class ItemsJsonProcessor implements Processor {
 
 	private OAuth2Client nyplOAuthClient;
 
@@ -35,20 +36,23 @@ public class ItemsPublisher implements Processor {
 
 	private TokenProperties tokenProperties;
 	
-	private static final Logger logger = LoggerFactory.getLogger(ItemsPublisher.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(ItemsJsonProcessor.class.getName());
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		Map<String, Object> exchangeContents = (Map<String, Object>) exchange.getIn().getBody();
 		List<Item> items = (List<Item>) exchangeContents.get(Constants.LIST_ITEMS);
-		NyplApiUtil nyplApiUtil = (NyplApiUtil) exchangeContents.get(Constants.API_UTIL);
-		nyplOAuthClient = nyplApiUtil.getoAuth2Client();
-		nyplApiForItems = nyplApiUtil.getNyplApiForItems();
-		tokenProperties = nyplApiUtil.getTokenProperties();
-		postItemInfoToApi(tokenProperties, nyplApiForItems, items, nyplOAuthClient);
-		logger.info("Published all the items for bibs - " + 
-						((Bib)exchangeContents.get(Constants.BIB)).getId());
-		exchange.getIn().setBody(exchangeContents);
+		List<String> itemsAsJson = getItemsAsJson(items);
+		exchange.getIn().setBody(itemsAsJson);
+	}
+	
+	public List<String> getItemsAsJson(List<Item> items) 
+			throws JsonGenerationException, JsonMappingException, IOException{
+		List<String> itemsAsJson = new ArrayList<>();
+		for(Item item : items){
+			itemsAsJson.add(new ObjectMapper().writeValueAsString(item));
+		}
+		return itemsAsJson;
 	}
 	
 	public void postItemInfoToApi(TokenProperties nyplTokenProperties, String itemsApi, List<Item> items, 
