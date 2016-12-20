@@ -45,9 +45,9 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 
 	@Override
 	public void configure() throws Exception {
-		from("file:" + scsbexportstaging + "?noop=true")
-		.split()
-		.tokenizeXML("bibRecord")
+		from("file:" + scsbexportstaging + "?fileName=recapSampleForNYPL.xml&noop=true")
+		.split(body().tokenizeXML("bibRecord", ""))
+		.streaming()
 		.process(new BibRecordProcessor())
 		.process(new Processor() {
 			

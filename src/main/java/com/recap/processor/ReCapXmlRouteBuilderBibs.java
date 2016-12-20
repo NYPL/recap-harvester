@@ -9,6 +9,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Component;
 
 import com.recap.config.BaseConfig;
 import com.recap.constants.Constants;
@@ -47,8 +48,8 @@ public class ReCapXmlRouteBuilderBibs extends RouteBuilder {
 	@Override
 	public void configure() throws Exception {
 		from("file:" + scsbexportstaging + "?noop=true")
-		.split()
-		.tokenizeXML("bibRecord")
+		.split(body().tokenizeXML("bibRecord", ""))
+		.streaming()
 		.process(new BibRecordProcessor()).process(new BibProcessor())
 		.process(new BibJsonProcessor())
 		.process(new Processor() {
