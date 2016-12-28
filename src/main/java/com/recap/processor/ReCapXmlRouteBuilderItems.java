@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
 import com.recap.updater.bib.BibProcessor;
-import com.recap.updater.bib.BibRecordProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
 import com.recap.updater.holdings.ItemsJsonProcessor;
@@ -41,18 +40,34 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 	
 	List<String> itemsProcessed = new ArrayList<String>();
 	
+	private int count;
+	
 	private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilderItems.class);
 
 	@Override
 	public void configure() throws Exception {
-		from("file:" + scsbexportstaging + "?fileName=recapSampleForNYPL.xml&noop=true")
-		.split(body().tokenizeXML("bibRecord", ""))
-		.streaming()
-		.process(new BibRecordProcessor())
+		onException(Exception.class)
 		.process(new Processor() {
 			
 			@Override
 			public void process(Exchange exchange) throws Exception {
+				Throwable caught = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, 
+						Throwable.class);
+				logger.error("FATAL ERROR - ", caught);
+			}
+		})
+		.handled(true);
+		
+		
+		from("file:" + scsbexportstaging + "?fileName=recapSampleForCUL.xml&noop=true")
+		.split(body().tokenizeXML("bibRecord", ""))
+		.streaming()
+		.unmarshal("getBibRecordJaxbDataFormat")
+		.process(new Processor() {
+			
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				count += 1;
 				Map<String, Object> exchangeContents = new HashMap<>();
 				BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
 				exchangeContents.put(Constants.BIB_RECORD, bibRecord);
@@ -79,11 +94,12 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 			
 			@Override
 			public void process(Exchange exchange) throws Exception {
+				System.out.println("BibRecord - Count - " + count);
 				System.out.println(exchange.getIn().getBody());
 				Map<String, Object> keyValues = getMappedResults(
 						(String)exchange.getIn().getBody());
 				List<String> bibsIds = (List<String>) keyValues.get("bibIds");
-				StringBuilder checkVal = new StringBuilder();
+				StringBuffer checkVal = new StringBuffer();
 				String itemId = (String) keyValues.get("id");
 				checkVal.append(itemId);
 				checkVal.append(" - ");

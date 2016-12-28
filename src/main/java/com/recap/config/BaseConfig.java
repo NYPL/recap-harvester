@@ -1,5 +1,10 @@
 package com.recap.config;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+
+import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.spi.DataFormat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +16,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.model.ListStreamsResult;
 import com.recap.utils.OAuth2Client;
+import com.recap.xml.models.BibRecord;
 
 @Configuration
 @PropertySource("classpath:application.properties")
@@ -50,6 +56,13 @@ public class BaseConfig {
 		if(foundStream == false)
 			amazonKinesisClient.createStream(kinesisStream, 2);
 		return amazonKinesisClient;
+	}
+	
+	@Bean
+	public DataFormat getBibRecordJaxbDataFormat() throws JAXBException{
+		JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
+		DataFormat jaxbDataFormat = new JaxbDataFormat(jaxbContext);
+		return jaxbDataFormat;
 	}
 
 }

@@ -69,9 +69,8 @@ public class ItemsProcessor implements Processor{
 										id = subField.getContent().substring(2, subField.getContent()
 												.length()-1);
 									else
-										id = subField.getContent();
-									
-										item.setId(id);
+										id = subField.getContent();				
+									item.setId(id);
 								}
 							}
 						}

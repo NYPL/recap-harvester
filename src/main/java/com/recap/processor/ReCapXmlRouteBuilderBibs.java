@@ -15,7 +15,6 @@ import com.recap.config.BaseConfig;
 import com.recap.constants.Constants;
 import com.recap.updater.bib.BibJsonProcessor;
 import com.recap.updater.bib.BibProcessor;
-import com.recap.updater.bib.BibRecordProcessor;
 import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProcessor;
@@ -50,7 +49,7 @@ public class ReCapXmlRouteBuilderBibs extends RouteBuilder {
 		from("file:" + scsbexportstaging + "?noop=true")
 		.split(body().tokenizeXML("bibRecord", ""))
 		.streaming()
-		.process(new BibRecordProcessor()).process(new BibProcessor())
+		.unmarshal("getBibRecordJaxbDataFormat")
 		.process(new BibJsonProcessor())
 		.process(new Processor() {
 			

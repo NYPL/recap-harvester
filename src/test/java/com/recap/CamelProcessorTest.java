@@ -17,7 +17,6 @@ import com.recap.config.BaseConfig;
 import com.recap.constants.Constants;
 import com.recap.updater.bib.BibJsonProcessor;
 import com.recap.updater.bib.BibProcessor;
-import com.recap.updater.bib.BibRecordProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
 import com.recap.updater.holdings.ItemsJsonProcessor;
@@ -53,9 +52,9 @@ public class CamelProcessorTest extends BaseTestCase {
 			@Override
 			public void configure() throws Exception {
 				from("file:" + scsbexportstaging + "?fileName=onerecord.xml&noop=true")
-				.split()
-				.tokenizeXML("bibRecord")
-				.process(new BibRecordProcessor()).process(new BibProcessor())
+				.split(body().tokenizeXML("bibRecord", ""))
+				.streaming()
+				.unmarshal("getBibRecordJaxbDataFormat").process(new BibProcessor())
 				.process(new BibJsonProcessor()).process(new Processor() {
 
 					@Override
