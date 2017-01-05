@@ -12,12 +12,14 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.recap.config.BaseConfig;
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
 import com.recap.updater.bib.BibProcessor;
@@ -26,7 +28,7 @@ import com.recap.updater.holdings.ItemsProcessor;
 import com.recap.updater.holdings.ItemsJsonProcessor;
 import com.recap.xml.models.BibRecord;
 
-@Component
+//@Component
 public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 	
 	@Value("${scsbexportstaging.location}")
@@ -41,6 +43,9 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 	List<String> itemsProcessed = new ArrayList<String>();
 	
 	private int count;
+	
+	@Autowired
+	private BaseConfig baseConfig;
 	
 	private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilderItems.class);
 
@@ -59,7 +64,7 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 		.handled(true);
 		
 		
-		from("file:" + scsbexportstaging + "?fileName=recapSampleForCUL.xml&noop=true")
+		from("file:" + scsbexportstaging + "?maxMessagesPerPoll=1&noop=true")
 		.split(body().tokenizeXML("bibRecord", ""))
 		.streaming()
 		.unmarshal("getBibRecordJaxbDataFormat")
@@ -81,7 +86,7 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 			public void process(Exchange exchange) throws Exception {
 				Map<String, Object> exchangeContents = (Map<String, Object>)
 						exchange.getIn().getBody();
-				Bib bib = new BibProcessor().getBibFromBibRecord(
+				Bib bib = new BibProcessor(baseConfig).getBibFromBibRecord(
 						(BibRecord) exchangeContents.get(Constants.BIB_RECORD));
 				exchangeContents.put(Constants.BIB, bib);
 				exchange.getIn().setBody(exchangeContents);

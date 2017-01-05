@@ -1,0 +1,118 @@
+{
+    "-": {
+        "MARCLabel": null,
+        "sierraLabel": "MISC"
+    },
+    "3": {
+        "MARCLabel": null,
+        "sierraLabel": "E-VIDEO"
+    },
+    "7": {
+        "MARCLabel": null,
+        "sierraLabel": "TEACHER AUDIO"
+    },
+    "8": {
+        "MARCLabel": null,
+        "sierraLabel": "TEACHER SET"
+    },
+    "a": {
+        "MARCLabel": "Language material",
+        "sierraLabel": "BOOK/TEXT"
+    },
+    "b": {
+        "MARCLabel": null,
+        "sierraLabel": "BLU-RAY"
+    },
+    "c": {
+        "MARCLabel": "Notated music",
+        "sierraLabel": "SCORE"
+    },
+    "d": {
+        "MARCLabel": "Manuscript notated music",
+        "sierraLabel": "MANUSCRIPT MUS"
+    },
+    "e": {
+        "MARCLabel": "Cartographic material",
+        "sierraLabel": "MAP"
+    },
+    "f": {
+        "MARCLabel": "Manuscript cartographic material",
+        "sierraLabel": null
+    },
+    "g": {
+        "MARCLabel": "Projected medium",
+        "sierraLabel": "FILM,SLIDE,ETC"
+    },
+    "h": {
+        "MARCLabel": null,
+        "sierraLabel": "MICROFORM"
+    },
+    "i": {
+        "MARCLabel": "Nonmusical sound recording",
+        "sierraLabel": "SPOKEN WORD"
+    },
+    "j": {
+        "MARCLabel": "Musical sound recording",
+        "sierraLabel": "MUSIC NON-CD"
+    },
+    "k": {
+        "MARCLabel": "Two-dimensional nonprojectable graphic",
+        "sierraLabel": "PICTURE"
+    },
+    "l": {
+        "MARCLabel": null,
+        "sierraLabel": "LARGE PRINT"
+    },
+    "m": {
+        "MARCLabel": "Computer file",
+        "sierraLabel": "COMPUTER FILE"
+    },
+    "n": {
+        "MARCLabel": null,
+        "sierraLabel": "E-AUDIOBOOK"
+    },
+    "o": {
+        "MARCLabel": "Kit",
+        "sierraLabel": "KIT"
+    },
+    "p": {
+        "MARCLabel": "Mixed materials",
+        "sierraLabel": "ARCHIVAL MIX"
+    },
+    "r": {
+        "MARCLabel": "Three-dimensional artifact or naturally occurring object",
+        "sierraLabel": "3-D OBJECT"
+    },
+    "s": {
+        "MARCLabel": null,
+        "sierraLabel": "VHS"
+    },
+    "t": {
+        "MARCLabel": "Manuscript language material",
+        "sierraLabel": "MANUSCRIPT"
+    },
+    "u": {
+        "MARCLabel": null,
+        "sierraLabel": "AUDIOBOOK"
+    },
+    "v": {
+        "MARCLabel": null,
+        "sierraLabel": "DVD"
+    },
+    "w": {
+        "MARCLabel": null,
+        "sierraLabel": "WEB RESOURCE"
+    },
+    "x": {
+        "MARCLabel": null,
+        "sierraLabel": "GAME"
+    },
+    "y": {
+        "MARCLabel": null,
+        "sierraLabel": "MUSIC CD"
+    },
+    "z": {
+        "MARCLabel": null,
+        "sierraLabel": "E-BOOK"
+    }
+}
