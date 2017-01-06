@@ -1,0 +1,38 @@
+{
+    "-": {
+        "MARCLabel": null,
+        "sierraLabel": "---"
+    },
+    "7": {
+        "MARCLabel": null,
+        "sierraLabel": "ARCHIVES & MSS"
+    },
+    "a": {
+        "MARCLabel": "Monographic component part",
+        "sierraLabel": "MONO COMP PT"
+    },
+    "b": {
+        "MARCLabel": "Serial component part",
+        "sierraLabel": "SER COMP PT"
+    },
+    "c": {
+        "MARCLabel": "Collection",
+        "sierraLabel": "COLLECTION"
+    },
+    "d": {
+        "MARCLabel": "Subunit",
+        "sierraLabel": "SUBUNIT"
+    },
+    "i": {
+        "MARCLabel": "Integrating resource",
+        "sierraLabel": "INTGRTNG RES"
+    },
+    "m": {
+        "MARCLabel": "Monograph/Item",
+        "sierraLabel": "MONOGRAPH"
+    },
+    "s": {
+        "MARCLabel": "Serial",
+        "sierraLabel": "SERIAL"
+    }
+}

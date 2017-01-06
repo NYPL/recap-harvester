@@ -16,6 +16,10 @@ public class Bib {
 	private String title;
 	private String author;
 	private Map<String, String> materialType;
+	private Map<String, String> bibLevel;
+	private Integer publishYear;
+	private Map<String, String> country;
+	private Map<String, Map<String, String>> fixedFields;
 	private List<VarField> varFields;
 
 	public String getId() {
@@ -104,6 +108,38 @@ public class Bib {
 
 	public void setMaterialType(Map<String, String> materialType) {
 		this.materialType = materialType;
+	}
+
+	public Map<String, String> getBibLevel() {
+		return bibLevel;
+	}
+
+	public void setBibLevel(Map<String, String> bibLevel) {
+		this.bibLevel = bibLevel;
+	}
+
+	public Integer getPublishYear() {
+		return publishYear;
+	}
+
+	public void setPublishYear(Integer publishYear) {
+		this.publishYear = publishYear;
+	}
+
+	public Map<String, String> getCountry() {
+		return country;
+	}
+
+	public void setCountry(Map<String, String> country) {
+		this.country = country;
+	}
+
+	public Map<String, Map<String, String>> getFixedFields() {
+		return fixedFields;
+	}
+
+	public void setFixedFields(Map<String, Map<String, String>> fixedFields) {
+		this.fixedFields = fixedFields;
 	}
 
 	public List<VarField> getVarFields() {

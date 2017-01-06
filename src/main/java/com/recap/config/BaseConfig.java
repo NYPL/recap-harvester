@@ -90,5 +90,17 @@ public class BaseConfig {
 			throws JsonParseException, JsonMappingException, IOException{
 		return new ObjectMapper().readValue(new File("src/main/resources/materialLookup.json"), Map.class);
 	}
+	
+	@Bean
+	public Map<String, Map<String, String>> bibLevelCodeAndVals() 
+			throws JsonParseException, JsonMappingException, IOException{
+		return new ObjectMapper().readValue(new File("src/main/resources/bibLevelLookup.json"), Map.class);
+	}
+	
+	@Bean
+	public Map<String, String> countryCodeAndVals() 
+			throws JsonParseException, JsonMappingException, IOException{
+		return new ObjectMapper().readValue(new File("src/main/resources/countryLookup.json"), Map.class);
+	}
 
 }
