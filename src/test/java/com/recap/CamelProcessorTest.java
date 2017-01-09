@@ -29,6 +29,9 @@ public class CamelProcessorTest extends BaseTestCase {
 
 	@Autowired
 	CamelContext camelContext;
+	
+	@Autowired
+	private BaseConfig baseConfig;
 
 	ApplicationContext context = new AnnotationConfigApplicationContext(BaseConfig.class);
 
@@ -51,10 +54,10 @@ public class CamelProcessorTest extends BaseTestCase {
 		camelContext.addRoutes(new RouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				from("file:" + scsbexportstaging + "?fileName=onerecord.xml&noop=true")
+				from("file:" + scsbexportstaging + "?fileName=testrecord.xml&noop=true")
 				.split(body().tokenizeXML("bibRecord", ""))
 				.streaming()
-				.unmarshal("getBibRecordJaxbDataFormat").process(new BibProcessor())
+				.unmarshal("getBibRecordJaxbDataFormat").process(new BibProcessor(baseConfig))
 				.process(new BibJsonProcessor()).process(new Processor() {
 
 					@Override
