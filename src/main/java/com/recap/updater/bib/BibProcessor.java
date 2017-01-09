@@ -64,7 +64,8 @@ public class BibProcessor implements Processor{
 				bib.setBibLevel(new BibFieldsProcessor(baseConfig).getBibLevel(bibRecordType));
 				bib.setPublishYear(new BibFieldsProcessor(baseConfig).getPublishYear(bibRecordType));
 				bib.setCountry(new BibFieldsProcessor(baseConfig).getCountry(bibRecordType));
-				bib.setFixedFields(new BibFieldsProcessor(baseConfig).getFixedFields(bibRecordType));
+				bib.setFixedFields(new BibFieldsProcessor(baseConfig).
+						getFixedFields(bibRecord, bibRecordType, bib.getUpdatedDate()));
 				bib.setVarFields(new BibFieldsProcessor(baseConfig).getVarFields(bibRecordType));
 			}
 			return bib;
