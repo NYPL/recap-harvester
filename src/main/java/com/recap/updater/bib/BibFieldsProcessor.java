@@ -32,13 +32,18 @@ public class BibFieldsProcessor {
 		this.baseConfig = baseConfig;
 	}
 	
-	public String getLanguageField(List<RecordType> bibRecordType)
+	public Map<String, String> getLanguageField(List<RecordType> bibRecordType)
 			throws JsonParseException, JsonMappingException, IOException{
+		Map<String, String> langCodeName = new LinkedHashMap<>();
 		String langCode = getLanguageCode(bibRecordType);
-		if(langCode != null)
-			return baseConfig.locationCodeVals().get(langCode);
-		else 
-			return null;
+		try{
+			langCodeName.put(Constants.CODE, langCode);
+			langCodeName.put(Constants.NAME, baseConfig.locationCodeVals().get(langCode));
+		}catch(NullPointerException nullPointerException){
+			langCodeName.put(Constants.CODE, langCode);
+			langCodeName.put(Constants.NAME, null);
+		}
+		return langCodeName;
 	}
 	
 	public String getLanguageCode(List<RecordType> bibRecordType) 
@@ -110,48 +115,66 @@ public class BibFieldsProcessor {
 		List<ControlFieldType> controlFields = bibRecordType.get(
 				Constants.BIB_RECORD_NUMBER).getControlfield();
 		boolean isProcessedControlField = false;
+		boolean bookTextMaterialType = false;
 		for(ControlFieldType controlFieldType : controlFields){
-			if(controlFieldType.getTag().equals(
-					Constants.CONTROL_FIELD_TYPE_MATERIAL_TYPE_CODE) &&
-					!isProcessedControlField && 
-					controlFieldType.getValue().startsWith(
-							Constants.REPR_OF_MICROFORM)){
-				materialTypeInSierraFormat.put(
-						Constants.CODE, Constants.REPR_OF_MICROFORM);
-				materialTypeInSierraFormat.put(
-						Constants.VALUE, Constants.MICROFORM);
-				isProcessedControlField = true;
-				return materialTypeInSierraFormat;
+			if(controlFieldType.getTag().equals( Constants.CONTROL_FIELD_TYPE_007) &&
+					!isProcessedControlField ){
+				if(controlFieldType.getValue().startsWith(Constants.REPR_OF_MICROFORM)){
+					materialTypeInSierraFormat.put(
+							Constants.CODE, Constants.REPR_OF_MICROFORM);
+					materialTypeInSierraFormat.put(
+							Constants.VALUE, Constants.MICROFORM);
+					isProcessedControlField = true;
+					return materialTypeInSierraFormat;
+				}else if(controlFieldType.getValue().startsWith(" ")){
+					bookTextMaterialType = true;
+					isProcessedControlField = true;
+				}
 			}
 		}
+		
 		List<DataFieldType> dataFields = bibRecordType.get(
 				Constants.BIB_RECORD_NUMBER).getDatafield();
 		boolean isProcessedDataField = false;
 		for(DataFieldType dataFieldType : dataFields){
 			if(dataFieldType.getTag().equals(
-					Constants.DATAFIELD_TYPE_MATERIAL_TYPE_CODE) && !isProcessedDataField){
+					Constants.DATAFIELD_TYPE_337) && !isProcessedDataField){
 				List<SubfieldatafieldType> subFields = dataFieldType.getSubfield();
 				for(SubfieldatafieldType subField : subFields){
-					if(subField.getCode().equals(
-							Constants.SUBFIELD_TYPE_MATERIAL_TYPE_CODE) && !isProcessedDataField &&
-							 subField.getValue().equals(Constants.REPR_OF_MICROFORM)){
-						materialTypeInSierraFormat.put(Constants.CODE, Constants.REPR_OF_MICROFORM);
-						materialTypeInSierraFormat.put(Constants.VALUE, Constants.MICROFORM);
-						isProcessedDataField = true;
-						return materialTypeInSierraFormat;
+					if(subField.getCode().equals(Constants.SUBFIELD_TYPE_b) &&
+							!isProcessedDataField) {
+						if(subField.getValue().equals(Constants.REPR_OF_MICROFORM)){
+							materialTypeInSierraFormat.put(Constants.CODE, Constants.REPR_OF_MICROFORM);
+							materialTypeInSierraFormat.put(Constants.VALUE, Constants.MICROFORM);
+							isProcessedDataField = true;
+							return materialTypeInSierraFormat;
+						}else if(subField.getValue().equals(" ")){
+							bookTextMaterialType = true;
+							isProcessedDataField = true;
+						}
 					}
+							 
 				}
 			}
 		}
 		String leaderValue = bibRecordType.get(
 				Constants.BIB_RECORD_NUMBER).getLeader().getValue();
-		StringBuffer stringBuffer = new StringBuffer(leaderValue.substring(6));
+		if(Character.toString(leaderValue.charAt(6)).equals(" ") && bookTextMaterialType){
+			materialTypeInSierraFormat.put(Constants.CODE, Constants.REPR_OF_BOOK_TEXT);
+			materialTypeInSierraFormat.put(Constants.VALUE, Constants.BOOK_TEXT);
+			return materialTypeInSierraFormat;
+		}
+		
 		Map<String, String> materialCodeVal = baseConfig.materialCodeAndVals()
-				.get(Character.toString(stringBuffer.toString().charAt(0)));
-		materialTypeInSierraFormat.put(Constants.CODE, Character.toString(stringBuffer.toString()
-				.charAt(0)));
-		materialTypeInSierraFormat.put(Constants.VALUE, materialCodeVal.get(
-				Constants.SIERRA_LABEL));
+				.get(Character.toString(leaderValue.charAt(6)));
+		materialTypeInSierraFormat.put(Constants.CODE, 
+				Character.toString(leaderValue.charAt(6)));
+		try{
+			materialTypeInSierraFormat.put(Constants.VALUE, materialCodeVal.get(
+					Constants.SIERRA_LABEL));
+		}catch(NullPointerException nullPointerException){
+			materialTypeInSierraFormat = null;
+		}
 		
 		return materialTypeInSierraFormat;
 	}
@@ -166,8 +189,13 @@ public class BibFieldsProcessor {
 		Map<String, String> materialTypeInSierraFormat = new HashMap<>();
 		materialTypeInSierraFormat.put(Constants.CODE, Character.toString(stringBuffer.toString()
 				.charAt(0)));
-		materialTypeInSierraFormat.put(Constants.VALUE, materialCodeVal.get(
-				Constants.SIERRA_LABEL));
+		try{
+			materialTypeInSierraFormat.put(Constants.VALUE, materialCodeVal.get(
+					Constants.SIERRA_LABEL));
+		}catch(NullPointerException nullPointerException){
+			materialTypeInSierraFormat = null;
+		}
+		
 		return materialTypeInSierraFormat;
 	}
 	
@@ -259,13 +287,13 @@ public class BibFieldsProcessor {
 	
 	public Map<String, String> getFixedFieldsForLanguage(List<RecordType> bibRecordType) 
 			throws JsonParseException, JsonMappingException, IOException{
-		Map<String, String> languageKeysAndVals = new LinkedHashMap<>();
-		String language = getLanguageField(bibRecordType);
-		if(language == null)
+		Map<String, String> langCodeAndName = getLanguageField(bibRecordType);
+		if(langCodeAndName == null)
 			return null;
+		Map<String, String> languageKeysAndVals = new LinkedHashMap<>();
 		languageKeysAndVals.put(Constants.LABEL, Constants.LANGUAGE);
-		languageKeysAndVals.put(Constants.VALUE, getLanguageCode(bibRecordType));
-		languageKeysAndVals.put(Constants.DISPLAY, language);
+		languageKeysAndVals.put(Constants.VALUE, langCodeAndName.get(Constants.CODE));
+		languageKeysAndVals.put(Constants.DISPLAY, langCodeAndName.get(Constants.NAME));
 		return languageKeysAndVals;
 	}
 	
@@ -279,7 +307,7 @@ public class BibFieldsProcessor {
 	public Map<String, String> getFixedFieldsForBibLevel(List<RecordType> bibRecordType) 
 			throws JsonParseException, JsonMappingException, IOException{
 		Map<String, String> bibLevelInfo = getBibLevel(bibRecordType);
-		if(bibLevelInfo.get(Constants.VALUE) == null)
+		if(bibLevelInfo == null)
 			return null;
 		Map<String, String> fixedFieldsBibLevel = new LinkedHashMap<>();
 		fixedFieldsBibLevel.put(Constants.LABEL, Constants.BIB_LEVEL);
@@ -303,8 +331,12 @@ public class BibFieldsProcessor {
 		Map<String, String> materialTypeCodeAndVal = getMaterialType(bibRecordType);
 		Map<String, String> materialTypeCodeVal = new LinkedHashMap<>();
 		materialTypeCodeVal.put(Constants.LABEL, Constants.MATERIAL_TYPE);
-		materialTypeCodeVal.put(Constants.VALUE, materialTypeCodeAndVal.get(Constants.CODE));
-		materialTypeCodeVal.put(Constants.DISPLAY, materialTypeCodeAndVal.get(Constants.VALUE));
+		try{
+			materialTypeCodeVal.put(Constants.VALUE, materialTypeCodeAndVal.get(Constants.CODE));
+			materialTypeCodeVal.put(Constants.DISPLAY, materialTypeCodeAndVal.get(Constants.VALUE));
+		}catch(NullPointerException nullPOinterException){
+			materialTypeCodeAndVal = null;
+		}
 		return materialTypeCodeVal;
 	}
 	

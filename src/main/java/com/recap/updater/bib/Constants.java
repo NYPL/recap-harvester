@@ -3,14 +3,16 @@ package com.recap.updater.bib;
 public class Constants {
 	
 	public static final String CONTROL_FIELD_TYPE_008 = "008";
-	public static final String CONTROL_FIELD_TYPE_MATERIAL_TYPE_CODE = "007";
+	public static final String CONTROL_FIELD_TYPE_007 = "007";
 	public static final String DATAFIELD_TYPE_TITLE_CODE = "245";
 	public static final String DATAFIELD_TYPE_AUTHOR_CODE = "100";
-	public static final String DATAFIELD_TYPE_MATERIAL_TYPE_CODE = "337";
+	public static final String DATAFIELD_TYPE_337 = "337";
 	public static final String SUBFIELD_TYPE_AUTHOR_CODE = "a";
-	public static final String SUBFIELD_TYPE_MATERIAL_TYPE_CODE = "b";
+	public static final String SUBFIELD_TYPE_b = "b";
+	public static final String REPR_OF_BOOK_TEXT = "a";
 	public static final String REPR_OF_MICROFORM = "h";
 	public static final String MICROFORM = "MICROFORM";
+	public static final String BOOK_TEXT = "BOOK/TEXT";
 	public static final String CODE = "code";
 	public static final String VALUE = "value";
 	public static final String NAME = "name";

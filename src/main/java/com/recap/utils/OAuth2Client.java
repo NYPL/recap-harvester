@@ -8,17 +8,21 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 
 public class OAuth2Client {
     
-    @Value("${accessTokenUrl}")
 	private String accessTokenUri;
 	
-	@Value("${clientId}")
 	private String clientId;
 	
-	@Value("${clientSecret}")
 	private String clientSecret;
 	
-	@Value("${grantType}")
 	private String grantType;
+	
+	public OAuth2Client(String accessTokenUrl, String clientId, String clientSecret, 
+			String grantType){
+		this.accessTokenUri = accessTokenUrl;
+		this.clientId = clientId;
+		this.clientSecret = clientSecret;
+		this.grantType = grantType;
+	}
 	
 	public OAuth2ProtectedResourceDetails getClientCredentialsResourceDetails() {
 		ClientCredentialsResourceDetails resource = new ClientCredentialsResourceDetails();

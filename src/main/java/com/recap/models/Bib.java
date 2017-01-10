@@ -12,7 +12,7 @@ public class Bib {
 	private String createdDate;
 	private Boolean deleted;
 	private Boolean suppressed;
-	private String lang;
+	private Map<String, String> lang;
 	private String title;
 	private String author;
 	private Map<String, String> materialType;
@@ -78,11 +78,11 @@ public class Bib {
 		this.suppressed = suppressed;
 	}
 
-	public String getLang() {
+	public Map<String, String> getLang() {
 		return lang;
 	}
 
-	public void setLang(String lang) {
+	public void setLang(Map<String, String> lang) {
 		this.lang = lang;
 	}
 

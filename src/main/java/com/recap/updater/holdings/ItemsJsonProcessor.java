@@ -24,7 +24,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
 import com.recap.models.Item;
-import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProperties;
 

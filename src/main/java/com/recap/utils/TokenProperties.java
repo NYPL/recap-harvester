@@ -3,7 +3,9 @@ package com.recap.utils;
 import java.util.Date;
 
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TokenProperties {
 	
 	private String tokenValue;

@@ -20,9 +20,7 @@ import com.recap.updater.bib.BibProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
 import com.recap.updater.holdings.ItemsJsonProcessor;
-import com.recap.utils.NyplApiUtil;
 import com.recap.utils.OAuth2Client;
-import com.recap.utils.TokenProcessor;
 import com.recap.utils.TokenProperties;
 
 public class CamelProcessorTest extends BaseTestCase {
@@ -62,7 +60,7 @@ public class CamelProcessorTest extends BaseTestCase {
 
 					@Override
 					public void process(Exchange exchange) throws Exception {
-						exchange = setNyplApiUtilInExchange(exchange);
+						//exchange = setNyplApiUtilInExchange(exchange);
 					}
 				})
 				.process(new HoldingListProcessor())
@@ -71,7 +69,7 @@ public class CamelProcessorTest extends BaseTestCase {
 	
 					@Override
 					public void process(Exchange exchange) throws Exception {
-						exchange = setNyplApiUtilInExchange(exchange);
+						//exchange = setNyplApiUtilInExchange(exchange);
 					}
 				})
 				.process(new ItemsJsonProcessor());
@@ -82,7 +80,7 @@ public class CamelProcessorTest extends BaseTestCase {
 
 	}
 	
-	public Exchange setNyplApiUtilInExchange(Exchange exchange) throws Exception {
+	/*public Exchange setNyplApiUtilInExchange(Exchange exchange) throws Exception {
 		tokenProperties = new TokenProcessor().validateAndReturnTokenProperties(tokenProperties, nyplOAuth2Client);
 		NyplApiUtil apiUtil = new NyplApiUtil();
 		apiUtil.setNyplApiForBibs(nyplApiForBibs);
@@ -94,5 +92,5 @@ public class CamelProcessorTest extends BaseTestCase {
 		exchange.getIn().setBody(exchangeContents);
 
 		return exchange;
-	}
+	}*/
 }
