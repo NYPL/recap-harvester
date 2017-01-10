@@ -59,14 +59,14 @@ public class BibProcessor implements Processor{
 			if(bibRecordType.size() == 1){
 				bib.setTitle(new BibFieldsProcessor(baseConfig).getTitle(bibRecordType));
 				bib.setAuthor(new BibFieldsProcessor(baseConfig).getAuthor(bibRecordType));
-				bib.setLang(new BibFieldsProcessor(baseConfig).getLanguageField(bibRecordType));
-				bib.setMaterialType(new BibFieldsProcessor(baseConfig).getMaterialType(bibRecordType));
-				bib.setBibLevel(new BibFieldsProcessor(baseConfig).getBibLevel(bibRecordType));
-				bib.setPublishYear(new BibFieldsProcessor(baseConfig).getPublishYear(bibRecordType));
-				bib.setCountry(new BibFieldsProcessor(baseConfig).getCountry(bibRecordType));
+				bib.setLang(new BibFieldsProcessor(baseConfig).getLanguageField(bibRecordType, bib));
+				bib.setMaterialType(new BibFieldsProcessor(baseConfig).getMaterialType(bibRecordType, bib));
+				bib.setBibLevel(new BibFieldsProcessor(baseConfig).getBibLevel(bibRecordType, bib));
+				bib.setPublishYear(new BibFieldsProcessor(baseConfig).getPublishYear(bibRecordType, bib));
+				bib.setCountry(new BibFieldsProcessor(baseConfig).getCountry(bibRecordType, bib));
 				bib.setFixedFields(new BibFieldsProcessor(baseConfig).
-						getFixedFields(bibRecord, bibRecordType, bib.getUpdatedDate()));
-				bib.setVarFields(new BibFieldsProcessor(baseConfig).getVarFields(bibRecordType));
+						getFixedFields(bibRecord, bibRecordType, bib.getUpdatedDate(), bib));
+				bib.setVarFields(new BibFieldsProcessor(baseConfig).getVarFields(bibRecordType, bib));
 			}
 			return bib;
 		}catch(Exception e){
