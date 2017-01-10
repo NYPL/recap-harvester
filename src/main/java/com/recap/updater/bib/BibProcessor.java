@@ -70,7 +70,9 @@ public class BibProcessor implements Processor{
 			}
 			return bib;
 		}catch(Exception e){
-			logger.error("Error occurred while setting Bib properties - ", e);
+			logger.error("Error occurred while setting Bib properties of bib -  " + 
+		"recap-" + bibRecord.getBib().getOwningInstitutionId() + ", bibId - " + bibRecord.
+		getBib().getOwningInstitutionBibId(), e);
 			throw new Exception(e.getMessage());
 		}
 	}
