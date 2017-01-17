@@ -36,15 +36,17 @@ public class BibFieldsProcessor {
 			throws JsonParseException, JsonMappingException, IOException{
 		Map<String, String> langCodeName = new LinkedHashMap<>();
 		String langCode = getLanguageCode(bibRecordType, bib);
+		if(langCode == null)
+			return null;
 		try{
-			langCodeName.put(Constants.CODE, langCode);
-			langCodeName.put(Constants.NAME, baseConfig.locationCodeVals().get(langCode));
+			langCodeName.put(BibConstants.CODE, langCode);
+			langCodeName.put(BibConstants.NAME, baseConfig.locationCodeVals().get(langCode));
 		}catch(NullPointerException nullPointerException){
 			logger.error("FATAL-low : Unable to get name for location code - " + langCode +
 					" for " + bib.getNyplType() + " - " + bib.getId() + ", "
 							+ "source - " + bib.getNyplSource());
-			langCodeName.put(Constants.CODE, langCode);
-			langCodeName.put(Constants.NAME, null);
+			langCodeName.put(BibConstants.CODE, langCode);
+			langCodeName.put(BibConstants.NAME, null);
 		}
 		return langCodeName;
 	}
@@ -52,19 +54,19 @@ public class BibFieldsProcessor {
 	public String getLanguageCode(List<RecordType> bibRecordType, Bib bib) 
 			throws JsonParseException, JsonMappingException, IOException{
 		List<ControlFieldType> controlFields = bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getControlfield();
+				BibConstants.BIB_RECORD_NUMBER).getControlfield();
 		StringBuffer lang = new StringBuffer();
 		boolean isProcessed = false;
 		for(ControlFieldType controlFieldType : controlFields){
 			if(controlFieldType.getTag().equals(
-					Constants.CONTROL_FIELD_TYPE_008) && 
+					BibConstants.CONTROL_FIELD_TYPE_008) && 
 					!isProcessed){
 				String langCode = null;
 				try{
 					lang.append(controlFieldType.getValue());
 					langCode = lang.substring(
-							Constants.CONTROL_FIELD_LANG_CODE_START_INDEX, 
-							Constants.CONTROL_FIELD_LANG_CODE_END_INDEX);
+							BibConstants.CONTROL_FIELD_LANG_CODE_START_INDEX, 
+							BibConstants.CONTROL_FIELD_LANG_CODE_END_INDEX);
 					isProcessed = true;
 					return langCode.trim();
 				}catch (StringIndexOutOfBoundsException stringOutOfBounds){
@@ -80,9 +82,9 @@ public class BibFieldsProcessor {
 	public String getTitle(List<RecordType> bibRecordType){
 		boolean isProcessed = false;
 		for(DataFieldType dataFieldType : bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getDatafield()){
+				BibConstants.BIB_RECORD_NUMBER).getDatafield()){
 			if(dataFieldType.getTag().equals(
-					Constants.DATAFIELD_TYPE_TITLE_CODE) && !isProcessed){
+					BibConstants.DATAFIELD_TYPE_TITLE_CODE) && !isProcessed){
 				StringBuffer stringBuffer = new StringBuffer();
 				for(SubfieldatafieldType subField : dataFieldType.getSubfield()){
 					stringBuffer.append(subField.getValue() + " ");
@@ -97,14 +99,14 @@ public class BibFieldsProcessor {
 	public String getAuthor(List<RecordType> bibRecordType){
 		boolean isProcessed = false;
 		for(DataFieldType dataFieldType : bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getDatafield()){
+				BibConstants.BIB_RECORD_NUMBER).getDatafield()){
 			if(dataFieldType.getTag().equals(
-					Constants.DATAFIELD_TYPE_AUTHOR_CODE) && 
+					BibConstants.DATAFIELD_TYPE_AUTHOR_CODE) && 
 					!isProcessed){
 				StringBuffer stringBuffer = new StringBuffer();
 				for(SubfieldatafieldType subField : dataFieldType.getSubfield()){
 					if(subField.getCode().equals(
-							Constants.SUBFIELD_TYPE_AUTHOR_CODE))
+							BibConstants.SUBFIELD_TYPE_AUTHOR_CODE))
 						stringBuffer.append(subField.getValue() + " ");
 				}
 				isProcessed = true;
@@ -118,34 +120,34 @@ public class BibFieldsProcessor {
 			throws JsonParseException, JsonMappingException, IOException{
 		Map<String, String> materialTypeInSierraFormat = new LinkedHashMap<>();
 		List<ControlFieldType> controlFields = bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getControlfield();
+				BibConstants.BIB_RECORD_NUMBER).getControlfield();
 		boolean isProcessedControlField = false;
 		for(ControlFieldType controlFieldType : controlFields){
-			if(controlFieldType.getTag().equals( Constants.CONTROL_FIELD_TYPE_007) &&
+			if(controlFieldType.getTag().equals( BibConstants.CONTROL_FIELD_TYPE_007) &&
 					!isProcessedControlField && 
-					controlFieldType.getValue().startsWith(Constants.REPR_OF_MICROFORM)){
+					controlFieldType.getValue().startsWith(BibConstants.REPR_OF_MICROFORM)){
 				materialTypeInSierraFormat.put(
-						Constants.CODE, Constants.REPR_OF_MICROFORM);
+						BibConstants.CODE, BibConstants.REPR_OF_MICROFORM);
 				materialTypeInSierraFormat.put(
-						Constants.VALUE, Constants.MICROFORM);
+						BibConstants.VALUE, BibConstants.MICROFORM);
 				isProcessedControlField = true;
 				return materialTypeInSierraFormat;
 			}
 		}
 		
 		List<DataFieldType> dataFields = bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getDatafield();
+				BibConstants.BIB_RECORD_NUMBER).getDatafield();
 		boolean isProcessedDataField = false;
 		for(DataFieldType dataFieldType : dataFields){
 			if(dataFieldType.getTag().equals(
-					Constants.DATAFIELD_TYPE_337) && !isProcessedDataField){
+					BibConstants.DATAFIELD_TYPE_337) && !isProcessedDataField){
 				List<SubfieldatafieldType> subFields = dataFieldType.getSubfield();
 				for(SubfieldatafieldType subField : subFields){
-					if(subField.getCode().equals(Constants.SUBFIELD_TYPE_b) &&
+					if(subField.getCode().equals(BibConstants.SUBFIELD_TYPE_b) &&
 							!isProcessedDataField && 
-							subField.getValue().equals(Constants.REPR_OF_MICROFORM)) {
-						materialTypeInSierraFormat.put(Constants.CODE, Constants.REPR_OF_MICROFORM);
-						materialTypeInSierraFormat.put(Constants.VALUE, Constants.MICROFORM);
+							subField.getValue().equals(BibConstants.REPR_OF_MICROFORM)) {
+						materialTypeInSierraFormat.put(BibConstants.CODE, BibConstants.REPR_OF_MICROFORM);
+						materialTypeInSierraFormat.put(BibConstants.VALUE, BibConstants.MICROFORM);
 						isProcessedDataField = true;
 						return materialTypeInSierraFormat;
 					}		 
@@ -153,21 +155,21 @@ public class BibFieldsProcessor {
 			}
 		}
 		String leaderValue = bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getLeader().getValue();
+				BibConstants.BIB_RECORD_NUMBER).getLeader().getValue();
 		
 		Map<String, String> materialCodeVal = baseConfig.materialCodeAndVals()
 				.get(Character.toString(leaderValue.charAt(6)));
-		materialTypeInSierraFormat.put(Constants.CODE, 
+		materialTypeInSierraFormat.put(BibConstants.CODE, 
 				Character.toString(leaderValue.charAt(6)));
 		try{
-			materialTypeInSierraFormat.put(Constants.VALUE, materialCodeVal.get(
-					Constants.SIERRA_LABEL));
+			materialTypeInSierraFormat.put(BibConstants.VALUE, materialCodeVal.get(
+					BibConstants.SIERRA_LABEL));
 		}catch(NullPointerException nullPointerException){
 			logger.error("FATAL-low : Unable to get materialType " +
 					" for " + bib.getNyplType() + " - " + bib.getId() + ", "
 					+ "source - " + bib.getNyplSource() + ", leader - " + leaderValue);
-			materialTypeInSierraFormat.put(Constants.CODE, Constants.REPR_OF_BOOK_TEXT);
-			materialTypeInSierraFormat.put(Constants.VALUE, Constants.BOOK_TEXT);
+			materialTypeInSierraFormat.put(BibConstants.CODE, BibConstants.REPR_OF_BOOK_TEXT);
+			materialTypeInSierraFormat.put(BibConstants.VALUE, BibConstants.BOOK_TEXT);
 		}
 		
 		return materialTypeInSierraFormat;
@@ -176,22 +178,22 @@ public class BibFieldsProcessor {
 	public Map<String, String> getBibLevel(List<RecordType> bibRecordType, Bib bib) 
 			throws JsonParseException, JsonMappingException, IOException{
 		String leaderValue = bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getLeader().getValue();
+				BibConstants.BIB_RECORD_NUMBER).getLeader().getValue();
 		StringBuffer stringBuffer = new StringBuffer(leaderValue.substring(7));
 		Map<String, String> materialCodeVal = baseConfig.bibLevelCodeAndVals()
 				.get(Character.toString(stringBuffer.toString().charAt(0)));
 		Map<String, String> materialTypeInSierraFormat = new HashMap<>();
-		materialTypeInSierraFormat.put(Constants.CODE, Character.toString(stringBuffer.toString()
+		materialTypeInSierraFormat.put(BibConstants.CODE, Character.toString(stringBuffer.toString()
 				.charAt(0)));
 		try{
-			materialTypeInSierraFormat.put(Constants.VALUE, materialCodeVal.get(
-					Constants.SIERRA_LABEL));
+			materialTypeInSierraFormat.put(BibConstants.VALUE, materialCodeVal.get(
+					BibConstants.SIERRA_LABEL));
 		}catch(NullPointerException nullPointerException){
 			logger.error("FATAL-low : Unable to get bibLevel " +
 					" for " + bib.getNyplType() + " - " + bib.getId() + ", "
 					+ "source - " + bib.getNyplSource() + ", leader - " + leaderValue);
-			materialTypeInSierraFormat.put(Constants.CODE, "-");
-			materialTypeInSierraFormat.put(Constants.VALUE, "---");
+			materialTypeInSierraFormat.put(BibConstants.CODE, "-");
+			materialTypeInSierraFormat.put(BibConstants.VALUE, "---");
 		}
 		
 		return materialTypeInSierraFormat;
@@ -200,18 +202,18 @@ public class BibFieldsProcessor {
 	public Integer getPublishYear(List<RecordType> bibRecordType, Bib bib)
 			throws JsonParseException, JsonMappingException, IOException{
 		List<ControlFieldType> controlFields = bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getControlfield();
+				BibConstants.BIB_RECORD_NUMBER).getControlfield();
 		StringBuffer publishYear = new StringBuffer();
 		boolean isProcessed = false;
 		for(ControlFieldType controlFieldType : controlFields){
 			if(controlFieldType.getTag().equals(
-					Constants.CONTROL_FIELD_TYPE_008) && !isProcessed){
+					BibConstants.CONTROL_FIELD_TYPE_008) && !isProcessed){
 				try{
 					publishYear.append(controlFieldType.getValue());
 					Integer publishYearNumber = Integer.parseInt(
 							publishYear.substring(
-									Constants.CONTROL_FIELD_PUBLISH_YEAR_START_INDEX, 
-									Constants.CONTROL_FIELD_PUBLISH_YEAR_END_INDEX).trim());
+									BibConstants.CONTROL_FIELD_PUBLISH_YEAR_START_INDEX, 
+									BibConstants.CONTROL_FIELD_PUBLISH_YEAR_END_INDEX).trim());
 					isProcessed = true;
 					return publishYearNumber;
 				}catch (StringIndexOutOfBoundsException stringOutOfBounds){
@@ -231,21 +233,21 @@ public class BibFieldsProcessor {
 	public Map<String, String> getCountry(List<RecordType> bibRecordType, Bib bib)
 			throws JsonParseException, JsonMappingException, IOException{
 		List<ControlFieldType> controlFields = bibRecordType.get(
-				Constants.BIB_RECORD_NUMBER).getControlfield();
+				BibConstants.BIB_RECORD_NUMBER).getControlfield();
 		StringBuffer countryInfo = new StringBuffer();
 		boolean isProcessed = false;
 		for(ControlFieldType controlFieldType : controlFields){
-			if(controlFieldType.getTag().equals(Constants.CONTROL_FIELD_TYPE_008) && !isProcessed){
+			if(controlFieldType.getTag().equals(BibConstants.CONTROL_FIELD_TYPE_008) && !isProcessed){
 				try{
 					countryInfo.append(controlFieldType.getValue());
 					String countryCode = countryInfo.substring(
-							Constants.CONTROL_FIELD_COUNTRY_CODE_START_INDEX, 
-							Constants.CONTROL_FIELD_COUNTRY_CODE_END_INDEX).trim();
+							BibConstants.CONTROL_FIELD_COUNTRY_CODE_START_INDEX, 
+							BibConstants.CONTROL_FIELD_COUNTRY_CODE_END_INDEX).trim();
 					String countryName = baseConfig.countryCodeAndVals().get(countryCode);
 					isProcessed = true;
 					Map<String, String> countryCodeName = new HashMap<>();
-					countryCodeName.put(Constants.CODE, countryCode);
-					countryCodeName.put(Constants.NAME, countryName);
+					countryCodeName.put(BibConstants.CODE, countryCode);
+					countryCodeName.put(BibConstants.NAME, countryName);
 					if(countryName == null)
 						return null;
 					return countryCodeName;
@@ -267,23 +269,23 @@ public class BibFieldsProcessor {
 			List<RecordType> bibRecordType, String updatedDate, Bib bib) 
 			throws JsonParseException, JsonMappingException, IOException{
 		Map<String, Map<String, String>> fixedFields = new HashMap<>();
-		fixedFields.put("24", getFixedFieldsForLanguage(bibRecordType, bib));
-		fixedFields.put("25", getFixedFieldsCharsSkipForTitle());
-		fixedFields.put("26", getFixedFieldsLocation(bibRecord));
-		fixedFields.put("27", getFixedFieldsCopies());
-		fixedFields.put("28", getFixedFieldsForCatalogDate());
-		fixedFields.put("29", getFixedFieldsForBibLevel(bibRecordType, bib));
-		fixedFields.put("30", getFixedFieldsForMaterialType(bibRecordType, bib));
-		fixedFields.put("31", getFixedFieldsForBibCode3());
-		fixedFields.put("80", getFixedFieldsRecordType());
-		fixedFields.put("81", getFixedFieldsForRecordNumber(bibRecord));
-		fixedFields.put("83", getFixedFieldsCreatedDate());
-		fixedFields.put("84", getFixedFieldsForUpdatedDate(updatedDate));
-		fixedFields.put("85", getFixedFieldsNumberOfRevisions());
-		fixedFields.put("86", getFixedFieldsAgency());
-		fixedFields.put("89", getFixedFieldsForCountry(bibRecordType, bib));
-		fixedFields.put("98", getFixedFieldsPDate());
-		fixedFields.put("107", getFixedFieldsMARCType());
+		fixedFields.put(BibConstants.FIXED_FIELDS_24, getFixedFieldsForLanguage(bibRecordType, bib));
+		fixedFields.put(BibConstants.FIXED_FIELDS_25, getFixedFieldsCharsSkipForTitle());
+		fixedFields.put(BibConstants.FIXED_FIELDS_26, getFixedFieldsLocation(bibRecord));
+		fixedFields.put(BibConstants.FIXED_FIELDS_27, getFixedFieldsCopies());
+		fixedFields.put(BibConstants.FIXED_FIELDS_28, getFixedFieldsForCatalogDate());
+		fixedFields.put(BibConstants.FIXED_FIELDS_29, getFixedFieldsForBibLevel(bibRecordType, bib));
+		fixedFields.put(BibConstants.FIXED_FIELDS_30, getFixedFieldsForMaterialType(bibRecordType, bib));
+		fixedFields.put(BibConstants.FIXED_FIELDS_31, getFixedFieldsForBibCode3());
+		fixedFields.put(BibConstants.FIXED_FIELDS_80, getFixedFieldsRecordType());
+		fixedFields.put(BibConstants.FIXED_FIELDS_81, getFixedFieldsForRecordNumber(bibRecord));
+		fixedFields.put(BibConstants.FIXED_FIELDS_83, getFixedFieldsCreatedDate());
+		fixedFields.put(BibConstants.FIXED_FIELDS_84, getFixedFieldsForUpdatedDate(updatedDate));
+		fixedFields.put(BibConstants.FIXED_FIELDS_85, getFixedFieldsNumberOfRevisions());
+		fixedFields.put(BibConstants.FIXED_FIELDS_86, getFixedFieldsAgency());
+		fixedFields.put(BibConstants.FIXED_FIELDS_89, getFixedFieldsForCountry(bibRecordType, bib));
+		fixedFields.put(BibConstants.FIXED_FIELDS_98, getFixedFieldsPDate());
+		fixedFields.put(BibConstants.FIXED_FIELDS_107, getFixedFieldsMARCType());
 		return fixedFields;
 	}
 	
@@ -291,16 +293,23 @@ public class BibFieldsProcessor {
 			throws JsonParseException, JsonMappingException, IOException{
 		Map<String, String> langCodeAndName = getLanguageField(bibRecordType, bib);
 		Map<String, String> languageKeysAndVals = new LinkedHashMap<>();
-		languageKeysAndVals.put(Constants.LABEL, Constants.LANGUAGE);
-		languageKeysAndVals.put(Constants.VALUE, langCodeAndName.get(Constants.CODE));
-		languageKeysAndVals.put(Constants.DISPLAY, langCodeAndName.get(Constants.NAME));
+		try{
+			languageKeysAndVals.put(BibConstants.LABEL, BibConstants.LANGUAGE);
+			languageKeysAndVals.put(BibConstants.VALUE, langCodeAndName.get(BibConstants.CODE));
+			languageKeysAndVals.put(BibConstants.DISPLAY, langCodeAndName.get(BibConstants.NAME));
+		}catch(NullPointerException nullPointerException){
+			logger.error("FATAL-low - Unable to get language code from - " + 
+					" for " + bib.getNyplType() + " - " + bib.getId() + ", "
+					+ "source - " + bib.getNyplSource());
+			return null;
+		}
 		return languageKeysAndVals;
 	}
 	
 	public Map<String, String> getFixedFieldsCharsSkipForTitle(){
 		Map<String, String> charsSkip = new LinkedHashMap<>();
-		charsSkip.put(Constants.LABEL, Constants.SKIP);
-		charsSkip.put(Constants.VALUE, Constants.SKIP_VALUE);
+		charsSkip.put(BibConstants.LABEL, BibConstants.SKIP);
+		charsSkip.put(BibConstants.VALUE, BibConstants.SKIP_VALUE);
 		return charsSkip;
 	}
 	
@@ -308,19 +317,19 @@ public class BibFieldsProcessor {
 			Bib bib) throws JsonParseException, JsonMappingException, IOException{
 		Map<String, String> bibLevelInfo = getBibLevel(bibRecordType, bib);
 		Map<String, String> fixedFieldsBibLevel = new LinkedHashMap<>();
-		fixedFieldsBibLevel.put(Constants.LABEL, Constants.BIB_LEVEL);
-		fixedFieldsBibLevel.put(Constants.VALUE, bibLevelInfo.get(Constants.CODE));
-		fixedFieldsBibLevel.put(Constants.DISPLAY, bibLevelInfo.get(Constants.VALUE));
+		fixedFieldsBibLevel.put(BibConstants.LABEL, BibConstants.BIB_LEVEL);
+		fixedFieldsBibLevel.put(BibConstants.VALUE, bibLevelInfo.get(BibConstants.CODE));
+		fixedFieldsBibLevel.put(BibConstants.DISPLAY, bibLevelInfo.get(BibConstants.VALUE));
 		return fixedFieldsBibLevel;
 	}
 	
 	public Map<String, String> getFixedFieldsLocation(BibRecord bibRecord){
 		StringBuffer stringBuffer = new StringBuffer();
-		stringBuffer.append(Constants.RECAP_INITIALS);
+		stringBuffer.append(BibConstants.RECAP_INITIALS);
 		stringBuffer.append(bibRecord.getBib().getOwningInstitutionId().toLowerCase());
 		Map<String, String> locationAndValue = new LinkedHashMap<>();
-		locationAndValue.put(Constants.LABEL, Constants.LOCATION);
-		locationAndValue.put(Constants.VALUE, stringBuffer.toString());
+		locationAndValue.put(BibConstants.LABEL, BibConstants.LOCATION);
+		locationAndValue.put(BibConstants.VALUE, stringBuffer.toString());
 		return locationAndValue;
 	}
 	
@@ -328,16 +337,16 @@ public class BibFieldsProcessor {
 			Bib bib) throws JsonParseException, JsonMappingException, IOException{
 		Map<String, String> materialTypeCodeAndVal = getMaterialType(bibRecordType, bib);
 		Map<String, String> materialTypeCodeVal = new LinkedHashMap<>();
-		materialTypeCodeVal.put(Constants.LABEL, Constants.MATERIAL_TYPE);
-		materialTypeCodeVal.put(Constants.VALUE, materialTypeCodeAndVal.get(Constants.CODE));
-		materialTypeCodeVal.put(Constants.DISPLAY, materialTypeCodeAndVal.get(Constants.VALUE));
+		materialTypeCodeVal.put(BibConstants.LABEL, BibConstants.MATERIAL_TYPE);
+		materialTypeCodeVal.put(BibConstants.VALUE, materialTypeCodeAndVal.get(BibConstants.CODE));
+		materialTypeCodeVal.put(BibConstants.DISPLAY, materialTypeCodeAndVal.get(BibConstants.VALUE));
 		return materialTypeCodeVal;
 	}
 	
 	public Map<String, String> getFixedFieldsRecordType(){
 		Map<String, String> recordTypeLabelAndVal = new LinkedHashMap<>();
-		recordTypeLabelAndVal.put(Constants.LABEL, Constants.RECORD_TYPE);
-		recordTypeLabelAndVal.put(Constants.VALUE, Constants.RECORD_TYPE_BIB);
+		recordTypeLabelAndVal.put(BibConstants.LABEL, BibConstants.RECORD_TYPE);
+		recordTypeLabelAndVal.put(BibConstants.VALUE, BibConstants.RECORD_TYPE_BIB);
 		return recordTypeLabelAndVal;
 	}
 	
@@ -347,57 +356,57 @@ public class BibFieldsProcessor {
 			bibId = bibId.substring(2, bibId.length() - 1);
 		}
 		Map<String, String> recordNumberVal = new LinkedHashMap<>();
-		recordNumberVal.put(Constants.LABEL, Constants.RECORD_NUMBER);
-		recordNumberVal.put(Constants.VALUE, bibId);
+		recordNumberVal.put(BibConstants.LABEL, BibConstants.RECORD_NUMBER);
+		recordNumberVal.put(BibConstants.VALUE, bibId);
 		return recordNumberVal;
 	}
 	
 	public Map<String, String> getFixedFieldsCreatedDate(){
 		Map<String, String> createdDateVals = new LinkedHashMap<>();
-		createdDateVals.put(Constants.LABEL, Constants.CREATED_DATE);
-		createdDateVals.put(Constants.VALUE, null);
+		createdDateVals.put(BibConstants.LABEL, BibConstants.CREATED_DATE);
+		createdDateVals.put(BibConstants.VALUE, null);
 		return createdDateVals;
 	}
 	
 	public Map<String, String> getFixedFieldsCopies(){
 		Map<String, String> copies = new LinkedHashMap<>();
-		copies.put(Constants.LABEL, Constants.COPIES);
-		copies.put(Constants.VALUE, Constants.COPIES_VALUE);
+		copies.put(BibConstants.LABEL, BibConstants.COPIES);
+		copies.put(BibConstants.VALUE, BibConstants.COPIES_VALUE);
 		return copies;
 	}
 	
 	public Map<String, String> getFixedFieldsForCatalogDate(){
 		Map<String, String> catDate = new LinkedHashMap<>();
-		catDate.put(Constants.LABEL, Constants.CATALOG_DATE);
-		catDate.put(Constants.VALUE, null);
+		catDate.put(BibConstants.LABEL, BibConstants.CATALOG_DATE);
+		catDate.put(BibConstants.VALUE, null);
 		return catDate;
 	}
 	
 	public Map<String, String> getFixedFieldsForBibCode3(){
 		Map<String, String> bibCode3Vals = new LinkedHashMap<>();
-		bibCode3Vals.put(Constants.LABEL, Constants.BIB_CODE_3);
-		bibCode3Vals.put(Constants.VALUE, null);
+		bibCode3Vals.put(BibConstants.LABEL, BibConstants.BIB_CODE_3);
+		bibCode3Vals.put(BibConstants.VALUE, null);
 		return bibCode3Vals;
 	}
 	
 	public Map<String, String> getFixedFieldsForUpdatedDate(String updatedDate){
 		Map<String, String> updatedDateVals = new LinkedHashMap<>();
-		updatedDateVals.put(Constants.LABEL, Constants.UPDATED_DATE);
-		updatedDateVals.put(Constants.VALUE, updatedDate);
+		updatedDateVals.put(BibConstants.LABEL, BibConstants.UPDATED_DATE);
+		updatedDateVals.put(BibConstants.VALUE, updatedDate);
 		return updatedDateVals;
 	}
 	
 	public Map<String, String> getFixedFieldsNumberOfRevisions(){
 		Map<String, String> numberOfRevisions = new LinkedHashMap<>();
-		numberOfRevisions.put(Constants.LABEL, Constants.NUMBER_REVISIONS);
-		numberOfRevisions.put(Constants.VALUE, Constants.NUMBER_REVISIONS_VALUE);
+		numberOfRevisions.put(BibConstants.LABEL, BibConstants.NUMBER_REVISIONS);
+		numberOfRevisions.put(BibConstants.VALUE, BibConstants.NUMBER_REVISIONS_VALUE);
 		return numberOfRevisions;
 	}
 	
 	public Map<String, String> getFixedFieldsAgency(){
 		Map<String, String> agencyVals = new LinkedHashMap<>();
-		agencyVals.put(Constants.LABEL, Constants.AGENCY);
-		agencyVals.put(Constants.VALUE, Constants.AGENCY_VALUE);
+		agencyVals.put(BibConstants.LABEL, BibConstants.AGENCY);
+		agencyVals.put(BibConstants.VALUE, BibConstants.AGENCY_VALUE);
 		return agencyVals;
 	}
 	
@@ -407,23 +416,23 @@ public class BibFieldsProcessor {
 		Map<String, String> countryCodeName = getCountry(bibRecordType, bib);
 		if(countryCodeName == null) 
 			return null;
-		countryVals.put(Constants.LABEL, Constants.COUNTRY);
-		countryVals.put(Constants.VALUE, countryCodeName.get(Constants.CODE));
-		countryVals.put(Constants.DISPLAY, countryCodeName.get(Constants.NAME));
+		countryVals.put(BibConstants.LABEL, BibConstants.COUNTRY);
+		countryVals.put(BibConstants.VALUE, countryCodeName.get(BibConstants.CODE));
+		countryVals.put(BibConstants.DISPLAY, countryCodeName.get(BibConstants.NAME));
 		return countryVals;
 	}
 	
 	public Map<String, String> getFixedFieldsPDate(){
 		Map<String, String> pDateVals = new LinkedHashMap<>();
-		pDateVals.put(Constants.LABEL, Constants.PDATE);
-		pDateVals.put(Constants.VALUE, null);
+		pDateVals.put(BibConstants.LABEL, BibConstants.PDATE);
+		pDateVals.put(BibConstants.VALUE, null);
 		return pDateVals;
 	}
 	
 	public Map<String, String> getFixedFieldsMARCType(){
 		Map<String, String> marcType = new LinkedHashMap<>();
-		marcType.put(Constants.LABEL, Constants.MARC_TYPE);
-		marcType.put(Constants.VALUE, " ");
+		marcType.put(BibConstants.LABEL, BibConstants.MARC_TYPE);
+		marcType.put(BibConstants.VALUE, " ");
 		return marcType;
 	}
 	
@@ -431,7 +440,7 @@ public class BibFieldsProcessor {
 		try{
 			List<VarField> varFieldObjects = new ArrayList<>();
 			List<DataFieldType> varFields = bibRecordType.get(
-					Constants.BIB_RECORD_NUMBER).getDatafield();
+					BibConstants.BIB_RECORD_NUMBER).getDatafield();
 			for(DataFieldType varField : varFields){
 				VarField varFieldObj = new VarField();
 				varFieldObj.setFieldTag(varField.getId());
@@ -452,9 +461,9 @@ public class BibFieldsProcessor {
 			VarField varFieldObjLeader = new VarField();
 			varFieldObjLeader.setFieldTag("_");
 			varFieldObjLeader.setContent(bibRecordType.get(
-					Constants.BIB_RECORD_NUMBER).getLeader().getValue());
+					BibConstants.BIB_RECORD_NUMBER).getLeader().getValue());
 			List<ControlFieldType> controlFields = bibRecordType.get(
-					Constants.BIB_RECORD_NUMBER).getControlfield();
+					BibConstants.BIB_RECORD_NUMBER).getControlfield();
 			for(ControlFieldType controlField : controlFields){
 				VarField varFieldObjControlField = new VarField();
 				varFieldObjControlField.setMarcTag(controlField.getTag());

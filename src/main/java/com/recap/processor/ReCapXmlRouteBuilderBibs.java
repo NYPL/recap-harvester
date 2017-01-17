@@ -3,6 +3,8 @@ package com.recap.processor;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.recap.config.BaseConfig;
@@ -19,7 +22,7 @@ import com.recap.updater.bib.BibProcessor;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProperties;
 
-@Component
+//@Component
 public class ReCapXmlRouteBuilderBibs extends RouteBuilder {
 
 	@Value("${scsbexportstaging.location}")
@@ -62,7 +65,8 @@ public class ReCapXmlRouteBuilderBibs extends RouteBuilder {
 		})
 		.handled(true);
 		
-		from("file:" + scsbexportstaging + "?fileName=recapSampleForCUL.xml&noop=true")
+		from("file:" + scsbexportstaging + "?fileName=testrecord.xml"
+				+ "&maxMessagesPerPoll=1&noop=true")
 		.split(body().tokenizeXML("bibRecord", ""))
 		.streaming()
 		.unmarshal("getBibRecordJaxbDataFormat")
@@ -73,11 +77,12 @@ public class ReCapXmlRouteBuilderBibs extends RouteBuilder {
 			@Override
 			public void process(Exchange exchange) throws Exception {
 				String body = (String) exchange.getIn().getBody();
-				System.out.println(body);
+				logger.info(body);
 				exchange.getIn().setHeader(Exchange.HTTP_METHOD, constant(HttpMethod.POST));
-				exchange.getIn().setHeader(Exchange.CONTENT_TYPE, "application/json");
+				exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
 				exchange.getIn().setHeader("Authorization", "Bearer " + getToken());
-				exchange.getIn().setBody(body);
+				HttpServletRequest request = exchange.getIn().getBody(HttpServletRequest.class);
+				exchange.getIn().setHeader(Exchange.HTTP_SERVLET_REQUEST, request);
 			}
 		})
 		.to(nyplApiForBibs);

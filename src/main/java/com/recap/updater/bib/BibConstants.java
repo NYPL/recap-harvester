@@ -1,6 +1,6 @@
 package com.recap.updater.bib;
 
-public class Constants {
+public class BibConstants {
 	
 	public static final String CONTROL_FIELD_TYPE_008 = "008";
 	public static final String CONTROL_FIELD_TYPE_007 = "007";
@@ -42,6 +42,25 @@ public class Constants {
 	public static final String MARC_TYPE = "MARC Type";
 	public static final String BIB_LEVEL = "Bib Level";
 	public static final String RECAP_INITIALS = "rc";
+	public static final String FIXED_FIELDS_24 = "24";
+	public static final String FIXED_FIELDS_25 = "25";
+	public static final String FIXED_FIELDS_26 = "26";
+	public static final String FIXED_FIELDS_27 = "27";
+	public static final String FIXED_FIELDS_28 = "28";
+	public static final String FIXED_FIELDS_29 = "29";
+	public static final String FIXED_FIELDS_30 = "30";
+	public static final String FIXED_FIELDS_31 = "31";
+	public static final String FIXED_FIELDS_80 = "80";
+	public static final String FIXED_FIELDS_81 = "81";
+	public static final String FIXED_FIELDS_83 = "83";
+	public static final String FIXED_FIELDS_84 = "84";
+	public static final String FIXED_FIELDS_85 = "85";
+	public static final String FIXED_FIELDS_86 = "86";
+	public static final String FIXED_FIELDS_89 = "89";
+	public static final String FIXED_FIELDS_98 = "98";
+	public static final String FIXED_FIELDS_107 = "107";
+	public static final String MONOGRAPH = "MONOGRAPH";
+	public static final String SERIAL = "SERIAL";
 	
 	public static final Integer BIB_RECORD_NUMBER = 0;
 	public static final Integer CONTROL_FIELD_LANG_CODE_START_INDEX = 34;

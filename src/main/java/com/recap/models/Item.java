@@ -1,6 +1,7 @@
 package com.recap.models;
 
 import java.util.List;
+import java.util.Map;
 
 public class Item {
 	
@@ -10,6 +11,12 @@ public class Item {
 	private List<String> bibIds;
 	private String updatedDate;
 	private String createdDate;
+	private boolean deleted;
+	private Map<String, String> location;
+	private Map<String, String> status;
+	private String barcode;
+	private String callNumber;
+	private Map<String, Map<String, Object>> fixedFields;
 	private List<VarField> varFields;
 
 	public String getId() {
@@ -58,6 +65,54 @@ public class Item {
 
 	public void setCreatedDate(String createdDate) {
 		this.createdDate = createdDate;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
+	public Map<String, String> getLocation() {
+		return location;
+	}
+
+	public void setLocation(Map<String, String> location) {
+		this.location = location;
+	}
+
+	public Map<String, String> getStatus() {
+		return status;
+	}
+
+	public void setStatus(Map<String, String> status) {
+		this.status = status;
+	}
+
+	public String getBarcode() {
+		return barcode;
+	}
+
+	public void setBarcode(String barcode) {
+		this.barcode = barcode;
+	}
+
+	public String getCallNumber() {
+		return callNumber;
+	}
+
+	public void setCallNumber(String callNumber) {
+		this.callNumber = callNumber;
+	}
+
+	public Map<String, Map<String, Object>> getFixedFields() {
+		return fixedFields;
+	}
+
+	public void setFixedFields(Map<String, Map<String, Object>> fixedFields) {
+		this.fixedFields = fixedFields;
 	}
 
 	public List<VarField> getVarFields() {
