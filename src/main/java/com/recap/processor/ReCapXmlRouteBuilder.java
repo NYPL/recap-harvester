@@ -1,7 +1,5 @@
 package com.recap.processor;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,12 +20,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recap.config.BaseConfig;
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
+import com.recap.updater.bib.BibJsonProcessor;
 import com.recap.updater.bib.BibProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
@@ -37,10 +33,13 @@ import com.recap.updater.holdings.ItemsJsonProcessor;
 import com.recap.xml.models.BibRecord;
 
 @Component
-public class ReCapXmlRouteBuilderItems extends RouteBuilder{
+public class ReCapXmlRouteBuilder extends RouteBuilder{
 	
 	@Value("${scsbexportstaging.location}")
 	private String scsbexportstaging;
+	
+	@Value("${nyplApiForBibs}")
+	private String nyplApiForBibs;
 
 	@Value("${nyplApiForItems}")
 	private String nyplApiForItems;
@@ -56,9 +55,6 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 	
 	@Value("${grantType}")
 	private String grantType;
-
-	
-	List<String> itemsProcessed = new ArrayList<String>();
 	
 	@Autowired
 	private BaseConfig baseConfig;
@@ -66,7 +62,7 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 	@Autowired
 	private TokenProperties tokenProperties;
 	
-	private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilderItems.class);
+	private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilder.class);
 
 	@Override
 	public void configure() throws Exception {
@@ -88,6 +84,24 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 		.split(body().tokenizeXML("bibRecord", ""))
 		.streaming()
 		.unmarshal("getBibRecordJaxbDataFormat")
+		.multicast()
+		.to("direct:bib", "direct:item");
+		
+		from("direct:bib")
+		.process(new BibProcessor(baseConfig))
+		.process(new BibJsonProcessor())
+		.process(new Processor() {
+			
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				String body = (String) exchange.getIn().getBody();
+				setAPIAccessInfoInExchange(exchange);
+				logger.info(body);
+			}
+		})
+		.to(nyplApiForBibs);
+		
+		from("direct:item")
 		.process(new Processor() {
 			
 			@Override
@@ -119,15 +133,19 @@ public class ReCapXmlRouteBuilderItems extends RouteBuilder{
 			@Override
 			public void process(Exchange exchange) throws Exception {
 				String body = (String) exchange.getIn().getBody();
+				setAPIAccessInfoInExchange(exchange);
 				logger.info(body);
-				exchange.getIn().setHeader(Exchange.HTTP_METHOD, constant(HttpMethod.POST));
-				exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-				exchange.getIn().setHeader("Authorization", "Bearer " + getToken());
-				HttpServletRequest request = exchange.getIn().getBody(HttpServletRequest.class);
-				exchange.getIn().setHeader(Exchange.HTTP_SERVLET_REQUEST, request);
 			}
 		})
 		.to(nyplApiForItems);
+	}
+	
+	public void setAPIAccessInfoInExchange(Exchange exchange) throws Exception{
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, constant(HttpMethod.POST));
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		exchange.getIn().setHeader("Authorization", "Bearer " + getToken());
+		HttpServletRequest request = exchange.getIn().getBody(HttpServletRequest.class);
+		exchange.getIn().setHeader(Exchange.HTTP_SERVLET_REQUEST, request);
 	}
 	
 	public String getToken() throws Exception {
