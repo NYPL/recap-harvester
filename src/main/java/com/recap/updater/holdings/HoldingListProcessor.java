@@ -31,18 +31,17 @@ public class HoldingListProcessor implements Processor{
 	public List<Holding> getHoldings(BibRecord bibRecord) throws RecapHarvesterException{
 		List<Holding> listHolding = new ArrayList<>();
 		try{
-			System.out.println(bibRecord.getBib().getOwningInstitutionBibId());
-			logger.error("Unable to get holdings for bib - " + 
-			bibRecord.getBib().getOwningInstitutionBibId());
+			for(Holdings holdings : bibRecord.getHoldings()){
+				for(Holding holding : holdings.getHolding()){
+					listHolding.add(holding);
+				}
+			}
 		}catch(NullPointerException npe){
+			logger.error("Unable to get holdings for bib - " + 
+					bibRecord.getBib().getOwningInstitutionBibId());
 			logger.error("Nullpointer exception occurred while trying to get holdings - ", npe);
 			throw new RecapHarvesterException("Hit a nullpointer exception while trying to "
 					+ "get holdings information");
-		}
-		for(Holdings holdings : bibRecord.getHoldings()){
-			for(Holding holding : holdings.getHolding()){
-				listHolding.add(holding);
-			}
 		}
 		return listHolding;
 	}
