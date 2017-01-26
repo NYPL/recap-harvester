@@ -1,10 +1,7 @@
 package com.recap.processor;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -79,7 +76,7 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 		.handled(true);
 		
 		
-		from("file:" + scsbexportstaging + "?fileName=testrecord.xml&"
+		from("file:" + scsbexportstaging + "?"
 				+ "maxMessagesPerPoll=1&noop=true")
 		.split(body().tokenizeXML("bibRecord", ""))
 		.streaming()
@@ -159,8 +156,6 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 					.createAndGetTokenAccessProperties();
 			return tokenProperties.getTokenValue();
 		}
-		logger.info("Going to send bib to API Service at - "
-				+ new SimpleDateFormat("yyyy-MM-dd").format(currentDate));
 		logger.info("Token expires - " + tokenProperties.getTokenExpiration());
 		logger.info(tokenProperties.getTokenValue());
 		return tokenProperties.getTokenValue();
