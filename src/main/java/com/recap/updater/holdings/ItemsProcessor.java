@@ -33,7 +33,7 @@ public class ItemsProcessor implements Processor{
 	private static Logger logger = LoggerFactory.getLogger(ItemsProcessor.class);
 
 	@Override
-	public void process(Exchange exchange) throws Exception {
+	public void process(Exchange exchange) {
 		Map<String, Object> exchangeContents = (Map<String, Object>) exchange.getIn().getBody();
 		List<Holding> listHolding = (List<Holding>) exchangeContents.get(Constants.LIST_HOLDING);
 		Bib bib = (Bib) exchangeContents.get(Constants.BIB);

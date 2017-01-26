@@ -21,6 +21,7 @@ import org.springframework.core.io.ResourceLoader;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.recap.exceptions.RecapHarvesterException;
 import com.recap.xml.models.BibRecord;
 
 @Configuration
@@ -38,11 +39,17 @@ public class BaseConfig {
 	}
 	
 	@Bean
-	public DataFormat getBibRecordJaxbDataFormat() throws JAXBException{
-		JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
-		DataFormat jaxbDataFormat = new JaxbDataFormat(jaxbContext);
-		logger.info("Set Dataformat to extract xml data based on xml element configured");
-		return jaxbDataFormat;
+	public DataFormat getBibRecordJaxbDataFormat() throws RecapHarvesterException {
+		try{
+			JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
+			DataFormat jaxbDataFormat = new JaxbDataFormat(jaxbContext);
+			logger.info("Set Dataformat to extract xml data based on xml element configured");
+			return jaxbDataFormat;
+		}catch(JAXBException jaxbException){
+			logger.error("JAXBException occurred - ", jaxbException);
+			throw new RecapHarvesterException("Hit a JAXBException during bean configuration "
+					+ jaxbException.getMessage());
+		}
 	}
 	
 	@Bean

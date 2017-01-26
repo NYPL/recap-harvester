@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.recap.config.BaseConfig;
+import com.recap.exceptions.BibFieldProcessingException;
+import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
 import com.recap.xml.models.BibRecord;
 import com.recap.xml.models.RecordType;
@@ -29,7 +31,7 @@ public class BibProcessor implements Processor{
 	}
 	
 	@Override
-	public void process(Exchange exchange) throws Exception {
+	public void process(Exchange exchange) throws RecapHarvesterException {
 		BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
 		Bib bib = getBibFromBibRecord(bibRecord);
 
@@ -37,26 +39,26 @@ public class BibProcessor implements Processor{
 		exchange.getIn().setBody(bib);
 	}
 	
-	public Bib getBibFromBibRecord(BibRecord bibRecord) throws Exception{
-		try{
-			Bib bib = new Bib();
-			String bibId;
-			String originalBibIdFromRecap = bibRecord.getBib().getOwningInstitutionBibId();
-			if(originalBibIdFromRecap.startsWith(".")){
-				bibId = originalBibIdFromRecap.substring(2, originalBibIdFromRecap.length() - 1);
-			}else
-				bibId = bibRecord.getBib().getOwningInstitutionBibId();
-			bib.setId(bibId);
-			bib.setNyplSource("recap-" + bibRecord.getBib().getOwningInstitutionId());
-			bib.setNyplType("bib");
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-			bib.setUpdatedDate(dateFormat.format(new Date()));
-			bib.setDeleted(false);
-			bib.setSuppressed(false);
-			List<RecordType> bibRecordType = bibRecord.getBib().getContent().getCollection().
-					getRecord();
-			if(bibRecordType.size() == 1){
+	public Bib getBibFromBibRecord(BibRecord bibRecord) throws RecapHarvesterException{
+		Bib bib = new Bib();
+		String bibId;
+		String originalBibIdFromRecap = bibRecord.getBib().getOwningInstitutionBibId();
+		if(originalBibIdFromRecap.startsWith(".")){
+			bibId = originalBibIdFromRecap.substring(2, originalBibIdFromRecap.length() - 1);
+		}else
+			bibId = bibRecord.getBib().getOwningInstitutionBibId();
+		bib.setId(bibId);
+		bib.setNyplSource("recap-" + bibRecord.getBib().getOwningInstitutionId());
+		bib.setNyplType("bib");
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		bib.setUpdatedDate(dateFormat.format(new Date()));
+		bib.setDeleted(false);
+		bib.setSuppressed(false);
+		List<RecordType> bibRecordType = bibRecord.getBib().getContent().getCollection().
+				getRecord();
+		if(bibRecordType.size() == 1){
+			try{
 				bib.setTitle(new BibFieldsProcessor(baseConfig).getTitle(bibRecordType));
 				bib.setAuthor(new BibFieldsProcessor(baseConfig).getAuthor(bibRecordType));
 				bib.setLang(new BibFieldsProcessor(baseConfig).getLanguageField(bibRecordType, bib));
@@ -67,14 +69,13 @@ public class BibProcessor implements Processor{
 				bib.setFixedFields(new BibFieldsProcessor(baseConfig).
 						getFixedFields(bibRecord, bibRecordType, bib.getUpdatedDate(), bib));
 				bib.setVarFields(new BibFieldsProcessor(baseConfig).getVarFields(bibRecordType, bib));
+			}catch(BibFieldProcessingException bibFieldException){
+				logger.error("Error occurred while processing bib fields - ", bibFieldException);;
+				throw new RecapHarvesterException("BibFieldProcessingException occurred - " +
+				 bibFieldException.getMessage());
 			}
-			return bib;
-		}catch(Exception e){
-			logger.error("Error occurred while setting Bib properties of bib -  " + 
-		"recap-" + bibRecord.getBib().getOwningInstitutionId() + ", bibId - " + bibRecord.
-		getBib().getOwningInstitutionBibId(), e);
-			throw new Exception(e.getMessage());
 		}
+		return bib;
 	}
 
 }

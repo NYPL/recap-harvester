@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import com.recap.config.BaseConfig;
 import com.recap.constants.Constants;
+import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
 import com.recap.updater.bib.BibJsonProcessor;
 import com.recap.updater.bib.BibProcessor;
@@ -62,7 +63,19 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 	private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilder.class);
 
 	@Override
-	public void configure() throws Exception {
+	public void configure() {
+		onException(RecapHarvesterException.class)
+		.process(new Processor() {
+			
+			@Override
+			public void process(Exchange exchange) throws RecapHarvesterException {
+				Throwable caught = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, 
+						Throwable.class);
+				logger.error("RECAPHARVESTER ERROR - ", caught);
+			}
+		})
+		.handled(true);
+		
 		onException(Exception.class)
 		.process(new Processor() {
 			
@@ -70,11 +83,10 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 			public void process(Exchange exchange) throws Exception {
 				Throwable caught = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, 
 						Throwable.class);
-				logger.error("FATAL ERROR - ", caught);
+				logger.error("APP FATAL ERROR - ", caught);
 			}
 		})
 		.handled(true);
-		
 		
 		from("file:" + scsbexportstaging + "?"
 				+ "maxMessagesPerPoll=1&noop=true")
@@ -84,13 +96,14 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 		.multicast()
 		.to("direct:bib", "direct:item");
 		
+		
 		from("direct:bib")
 		.process(new BibProcessor(baseConfig))
 		.process(new BibJsonProcessor())
 		.process(new Processor() {
 			
 			@Override
-			public void process(Exchange exchange) throws Exception {
+			public void process(Exchange exchange) throws RecapHarvesterException {
 				String body = (String) exchange.getIn().getBody();
 				setAPIAccessInfoInExchange(exchange);
 				logger.info(body);
@@ -102,7 +115,7 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 		.process(new Processor() {
 			
 			@Override
-			public void process(Exchange exchange) throws Exception {
+			public void process(Exchange exchange) throws RecapHarvesterException {
 				Map<String, Object> exchangeContents = new HashMap<>();
 				BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
 				exchangeContents.put(Constants.BIB_RECORD, bibRecord);
@@ -113,7 +126,7 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 		.process(new Processor() {
 			
 			@Override
-			public void process(Exchange exchange) throws Exception {
+			public void process(Exchange exchange) throws RecapHarvesterException {
 				Map<String, Object> exchangeContents = (Map<String, Object>)
 						exchange.getIn().getBody();
 				Bib bib = new BibProcessor(baseConfig).getBibFromBibRecord(
@@ -128,7 +141,7 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 		.process(new Processor() {
 			
 			@Override
-			public void process(Exchange exchange) throws Exception {
+			public void process(Exchange exchange) throws RecapHarvesterException {
 				String body = (String) exchange.getIn().getBody();
 				setAPIAccessInfoInExchange(exchange);
 				logger.info(body);
@@ -137,7 +150,7 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 		.to(nyplApiForItems);
 	}
 	
-	public void setAPIAccessInfoInExchange(Exchange exchange) throws Exception{
+	public void setAPIAccessInfoInExchange(Exchange exchange) throws RecapHarvesterException{
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, constant(HttpMethod.POST));
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
 		exchange.getIn().setHeader("Authorization", "Bearer " + getToken());
@@ -145,19 +158,24 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 		exchange.getIn().setHeader(Exchange.HTTP_SERVLET_REQUEST, request);
 	}
 	
-	public String getToken() throws Exception {
-		Date currentDate = new Date();
-		currentDate.setMinutes(currentDate.getMinutes() + 5);
-		if(tokenProperties.getTokenExpiration() == null || 
-				!currentDate.before(tokenProperties.getTokenExpiration())){
-			logger.info("Requesting new nypl token");
-			tokenProperties = new OAuth2Client(
-					accessTokenUri, clientId, clientSecret, grantType)
-					.createAndGetTokenAccessProperties();
+	public String getToken() throws RecapHarvesterException {
+		try{
+			Date currentDate = new Date();
+			currentDate.setMinutes(currentDate.getMinutes() + 5);
+			if(tokenProperties.getTokenExpiration() == null || 
+					!currentDate.before(tokenProperties.getTokenExpiration())){
+				logger.info("Requesting new nypl token");
+				tokenProperties = new OAuth2Client(
+						accessTokenUri, clientId, clientSecret, grantType)
+						.createAndGetTokenAccessProperties();
+				return tokenProperties.getTokenValue();
+			}
+			logger.info("Token expires - " + tokenProperties.getTokenExpiration());
+			logger.info(tokenProperties.getTokenValue());
 			return tokenProperties.getTokenValue();
+		}catch(Exception e){
+			logger.error("Exception caught - ", e);
+			throw new RecapHarvesterException("Exception occurred while getting token");
 		}
-		logger.info("Token expires - " + tokenProperties.getTokenExpiration());
-		logger.info(tokenProperties.getTokenValue());
-		return tokenProperties.getTokenValue();
 	}
 }
