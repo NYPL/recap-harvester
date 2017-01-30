@@ -71,7 +71,7 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 			public void process(Exchange exchange) throws RecapHarvesterException {
 				Throwable caught = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, 
 						Throwable.class);
-				logger.error("RECAPHARVESTER ERROR - ", caught);
+				logger.error("RECAPHARVESTER ERROR HANDLED - ", caught);
 			}
 		})
 		.handled(true);
@@ -83,7 +83,7 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 			public void process(Exchange exchange) throws Exception {
 				Throwable caught = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, 
 						Throwable.class);
-				logger.error("APP FATAL ERROR - ", caught);
+				logger.error("APP FATAL UNEXPECTED ERROR - ", caught);
 			}
 		})
 		.handled(true);

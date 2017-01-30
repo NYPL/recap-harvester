@@ -46,7 +46,8 @@ public class BaseConfig {
 			logger.info("Set Dataformat to extract xml data based on xml element configured");
 			return jaxbDataFormat;
 		}catch(JAXBException jaxbException){
-			logger.error("JAXBException occurred - ", jaxbException);
+			logger.error("XML file processing Error - JAXBException occurred - ", 
+					jaxbException);
 			throw new RecapHarvesterException("Hit a JAXBException during bean configuration "
 					+ jaxbException.getMessage());
 		}
