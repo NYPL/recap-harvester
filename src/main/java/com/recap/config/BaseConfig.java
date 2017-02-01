@@ -1,6 +1,5 @@
 package com.recap.config;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
@@ -21,6 +20,7 @@ import org.springframework.core.io.ResourceLoader;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.ConnectionFactory;
 import com.recap.exceptions.RecapHarvesterException;
 import com.recap.xml.models.BibRecord;
 
@@ -83,6 +83,17 @@ public class BaseConfig {
 		return new ObjectMapper().readValue(resourceLoader.getResource(
 				"classpath:countryLookup.json").
 				getInputStream(), Map.class);
+	}
+	
+	@Bean
+	public ConnectionFactory rabbitConnectionFactory(){
+		ConnectionFactory connectionFactory = new ConnectionFactory();
+		connectionFactory.setHost(System.getenv("rabbitmq_host"));
+		connectionFactory.setPort(Integer.parseInt(System.getenv("rabbitmq_port")));
+		connectionFactory.setUsername(System.getenv("rabbitmq_username"));
+		connectionFactory.setPassword(System.getenv("rabbitmq_password"));
+		connectionFactory.setVirtualHost(System.getenv("rabbitmq_vhost"));
+		return connectionFactory;
 	}
 
 }

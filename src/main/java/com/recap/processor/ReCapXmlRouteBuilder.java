@@ -74,6 +74,21 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 				logger.error("RECAPHARVESTER ERROR HANDLED - ", caught);
 			}
 		})
+		.process(new Processor() {
+			
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				exchange.getIn().setHeader("rabbitmq.ROUTING_KEY", "failure");
+			}
+		})
+		.to("rabbitmq://"+System.getenv("rabbitmq_host") + ":" +
+		System.getenv("rabbitmq_port") + "/recap_xchange?"
+				+ "connectionFactory=#rabbitConnectionFactory&"
+				+ "queue=recap_failures&"
+				+ "autoDelete=false&"
+				+ "routingKey=failure&"
+				+ "vhost=" + System.getenv("rabbitmq_vhost") + "&"
+				+ "automaticRecoveryEnabled=true")
 		.handled(true);
 		
 		onException(Exception.class)
@@ -86,6 +101,21 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 				logger.error("APP FATAL UNEXPECTED ERROR - ", caught);
 			}
 		})
+		.process(new Processor() {
+			
+			@Override
+			public void process(Exchange exchange) throws Exception {
+				exchange.getIn().setHeader("rabbitmq.ROUTING_KEY", "failure");
+			}
+		})
+		.to("rabbitmq://"+System.getenv("rabbitmq_host") + ":" +
+				System.getenv("rabbitmq_port") + "/recap_xchange?"
+						+ "connectionFactory=#rabbitConnectionFactory&"
+						+ "queue=recap_failures&"
+						+ "autoDelete=false&"
+						+ "routingKey=failure&"
+						+ "vhost=" + System.getenv("rabbitmq_vhost") + "&"
+						+ "automaticRecoveryEnabled=true")
 		.handled(true);
 		
 		from("file:" + scsbexportstaging + "?"
