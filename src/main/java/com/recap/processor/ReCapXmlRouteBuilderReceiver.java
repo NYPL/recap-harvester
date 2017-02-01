@@ -1,8 +1,6 @@
 package com.recap.processor;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,24 +15,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.recap.config.BaseConfig;
-import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
-import com.recap.models.Bib;
-import com.recap.updater.bib.BibJsonProcessor;
-import com.recap.updater.bib.BibProcessor;
-import com.recap.updater.holdings.HoldingListProcessor;
-import com.recap.updater.holdings.ItemsProcessor;
 import com.recap.utils.OAuth2Client;
 import com.recap.utils.TokenProperties;
-import com.recap.updater.holdings.ItemsJsonProcessor;
-import com.recap.xml.models.BibRecord;
 
-//@Component
-public class ReCapXmlRouteBuilder extends RouteBuilder{
+@Component
+public class ReCapXmlRouteBuilderReceiver extends RouteBuilder{
 	
-	@Value("${scsbexportstaging.location}")
-	private String scsbexportstaging;
+	private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilderReceiver.class);
 	
 	@Value("${nyplApiForBibs}")
 	private String nyplApiForBibs;
@@ -55,15 +43,10 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 	private String grantType;
 	
 	@Autowired
-	private BaseConfig baseConfig;
-	
-	@Autowired
 	private TokenProperties tokenProperties;
 	
-	private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilder.class);
-
 	@Override
-	public void configure() {
+	public void configure() throws Exception {
 		onException(RecapHarvesterException.class)
 		.process(new Processor() {
 			
@@ -118,63 +101,44 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 						+ "automaticRecoveryEnabled=true")
 		.handled(true);
 		
-		from("file:" + scsbexportstaging + "?"
-				+ "maxMessagesPerPoll=1&noop=true")
-		.split(body().tokenizeXML("bibRecord", ""))
-		.streaming()
-		.unmarshal("getBibRecordJaxbDataFormat")
-		.multicast()
-		.to("direct:bib", "direct:item");
-		
-		
-		from("direct:bib")
-		.process(new BibProcessor(baseConfig))
-		.process(new BibJsonProcessor())
+		from("rabbitmq://"+System.getenv("rabbitmq_host") + ":" +
+				System.getenv("rabbitmq_port") + "/recap_xchange?"
+				+ "connectionFactory=#rabbitConnectionFactory&"
+				+ "queue=recap_bibs&"
+				+ "autoDelete=false&"
+				+ "routingKey=recap_bibs&"
+				+ "vhost=" + System.getenv("rabbitmq_vhost") + "&"
+				+ "automaticRecoveryEnabled=true&"
+				+ "prefetchCount=1")
 		.process(new Processor() {
 			
 			@Override
 			public void process(Exchange exchange) throws RecapHarvesterException {
-				String body = (String) exchange.getIn().getBody();
+				byte[] exchangeContent = (byte[]) exchange.getIn().getBody();
+				String body = new String(exchangeContent);
 				setAPIAccessInfoInExchange(exchange);
-				logger.info(body);
+				logger.info("Published bib to api - " + body);
 			}
 		})
 		.to(nyplApiForBibs);
 		
-		from("direct:item")
+		from("rabbitmq://"+System.getenv("rabbitmq_host") + ":" +
+				System.getenv("rabbitmq_port") + "/recap_xchange?"
+				+ "connectionFactory=#rabbitConnectionFactory&"
+				+ "queue=recap_items&"
+				+ "autoDelete=false&"
+				+ "routingKey=recap_items&"
+				+ "vhost=" + System.getenv("rabbitmq_vhost") + "&"
+				+ "automaticRecoveryEnabled=true&"
+				+ "prefetchCount=1")
 		.process(new Processor() {
 			
 			@Override
 			public void process(Exchange exchange) throws RecapHarvesterException {
-				Map<String, Object> exchangeContents = new HashMap<>();
-				BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
-				exchangeContents.put(Constants.BIB_RECORD, bibRecord);
-				exchange.getIn().setBody(exchangeContents);
-			}
-		})
-		.process(new HoldingListProcessor())
-		.process(new Processor() {
-			
-			@Override
-			public void process(Exchange exchange) throws RecapHarvesterException {
-				Map<String, Object> exchangeContents = (Map<String, Object>)
-						exchange.getIn().getBody();
-				Bib bib = new BibProcessor(baseConfig).getBibFromBibRecord(
-						(BibRecord) exchangeContents.get(Constants.BIB_RECORD));
-				exchangeContents.put(Constants.BIB, bib);
-				exchange.getIn().setBody(exchangeContents);
-			}
-		})
-		.process(new ItemsProcessor())
-		.process(new ItemsJsonProcessor())
-		.split(body())
-		.process(new Processor() {
-			
-			@Override
-			public void process(Exchange exchange) throws RecapHarvesterException {
-				String body = (String) exchange.getIn().getBody();
+				byte[] exchangeContent = (byte[]) exchange.getIn().getBody();
+				String body = new String(exchangeContent);
 				setAPIAccessInfoInExchange(exchange);
-				logger.info(body);
+				logger.info("Published item to api - " + body);
 			}
 		})
 		.to(nyplApiForItems);
@@ -208,4 +172,5 @@ public class ReCapXmlRouteBuilder extends RouteBuilder{
 			throw new RecapHarvesterException("Exception occurred while getting token");
 		}
 	}
+
 }
