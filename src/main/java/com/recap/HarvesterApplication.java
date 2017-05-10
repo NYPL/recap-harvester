@@ -10,16 +10,16 @@ import com.recap.exceptions.RecapHarvesterException;
 
 @SpringBootApplication
 public class HarvesterApplication {
-	
-	private static Logger logger = LoggerFactory.getLogger(HarvesterApplication.class);
 
-	public static void main(String[] args) throws RecapHarvesterException {
-		try{
-			SpringApplication.run(HarvesterApplication.class, args);
-		}catch(BeanCreationException beanException){
-			logger.error("Bean creation exception occurred - ", beanException);
-			throw new RecapHarvesterException(beanException.getMessage());
-		}
-		
-	}
+  private static Logger logger = LoggerFactory.getLogger(HarvesterApplication.class);
+
+  public static void main(String[] args) throws RecapHarvesterException {
+    try {
+      SpringApplication.run(HarvesterApplication.class, args);
+    } catch (BeanCreationException beanException) {
+      logger.error("Bean creation exception occurred - ", beanException);
+      throw new RecapHarvesterException(beanException.getMessage());
+    }
+
+  }
 }

@@ -9,14 +9,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Items {
 
-    @XmlElement(required = true, nillable = true)
-    protected ContentType content;
+  @XmlElement(required = true, nillable = true)
+  protected ContentType content;
 
-    public ContentType getContent() {
-        return content;
-    }
+  public ContentType getContent() {
+    return content;
+  }
 
-    public void setContent(ContentType content) {
-        this.content = content;
-    }
+  public void setContent(ContentType content) {
+    this.content = content;
+  }
 }

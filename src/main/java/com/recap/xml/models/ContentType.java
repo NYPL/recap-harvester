@@ -7,20 +7,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "content", propOrder = {
-        "collection"
-})
+@XmlType(name = "content", propOrder = {"collection"})
 
 @XmlRootElement(name = "content")
 public class ContentType {
-    @XmlElement(required = true, nillable = true)
-    protected CollectionType collection;
+  @XmlElement(required = true, nillable = true)
+  protected CollectionType collection;
 
-    public CollectionType getCollection() {
-        return collection;
-    }
+  public CollectionType getCollection() {
+    return collection;
+  }
 
-    public void setCollection(CollectionType collection) {
-        this.collection = collection;
-    }
+  public void setCollection(CollectionType collection) {
+    this.collection = collection;
+  }
 }

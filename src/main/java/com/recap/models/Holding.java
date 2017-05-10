@@ -6,35 +6,35 @@ import com.recap.xml.models.ContentType;
 import com.recap.xml.models.Items;
 
 public class Holding {
-	
-	private ContentType contentType;
-	
-	private List<Items> items;
-	
-	private String owningInstitutionHoldingsId;
 
-	public ContentType getContentType() {
-		return contentType;
-	}
+  private ContentType contentType;
 
-	public void setContentType(ContentType contentType) {
-		this.contentType = contentType;
-	}
+  private List<Items> items;
 
-	public List<Items> getItems() {
-		return items;
-	}
+  private String owningInstitutionHoldingsId;
 
-	public void setItems(List<Items> items) {
-		this.items = items;
-	}
+  public ContentType getContentType() {
+    return contentType;
+  }
 
-	public String getOwningInstitutionHoldingsId() {
-		return owningInstitutionHoldingsId;
-	}
+  public void setContentType(ContentType contentType) {
+    this.contentType = contentType;
+  }
 
-	public void setOwningInstitutionHoldingsId(String owningInstitutionHoldingsId) {
-		this.owningInstitutionHoldingsId = owningInstitutionHoldingsId;
-	}
+  public List<Items> getItems() {
+    return items;
+  }
+
+  public void setItems(List<Items> items) {
+    this.items = items;
+  }
+
+  public String getOwningInstitutionHoldingsId() {
+    return owningInstitutionHoldingsId;
+  }
+
+  public void setOwningInstitutionHoldingsId(String owningInstitutionHoldingsId) {
+    this.owningInstitutionHoldingsId = owningInstitutionHoldingsId;
+  }
 
 }

@@ -11,36 +11,36 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Holding {
 
-    @XmlElement
-    private String owningInstitutionHoldingsId;
+  @XmlElement
+  private String owningInstitutionHoldingsId;
 
-    @XmlElement(required = true, nillable = true)
-    protected ContentType content;
+  @XmlElement(required = true, nillable = true)
+  protected ContentType content;
 
-    @XmlElement
-    private List<Items> items;
+  @XmlElement
+  private List<Items> items;
 
-    public String getOwningInstitutionHoldingsId() {
-        return owningInstitutionHoldingsId;
-    }
+  public String getOwningInstitutionHoldingsId() {
+    return owningInstitutionHoldingsId;
+  }
 
-    public void setOwningInstitutionHoldingsId(String owningInstitutionHoldingsId) {
-        this.owningInstitutionHoldingsId = owningInstitutionHoldingsId;
-    }
+  public void setOwningInstitutionHoldingsId(String owningInstitutionHoldingsId) {
+    this.owningInstitutionHoldingsId = owningInstitutionHoldingsId;
+  }
 
-    public ContentType getContent() {
-        return content;
-    }
+  public ContentType getContent() {
+    return content;
+  }
 
-    public void setContent(ContentType content) {
-        this.content = content;
-    }
+  public void setContent(ContentType content) {
+    this.content = content;
+  }
 
-    public List<Items> getItems() {
-        return items;
-    }
+  public List<Items> getItems() {
+    return items;
+  }
 
-    public void setItems(List<Items> items) {
-        this.items = items;
-    }
+  public void setItems(List<Items> items) {
+    this.items = items;
+  }
 }

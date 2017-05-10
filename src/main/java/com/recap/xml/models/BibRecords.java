@@ -10,15 +10,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "bibRecords")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class BibRecords {
-	
-    private List<BibRecord> bibRecord;
-    
-    @XmlElement(name = "bibRecord")
-    public List<BibRecord> getBibRecords() {
-        return bibRecord;
-    }
 
-    public void setBibRecords(List<BibRecord> bibRecords) {
-        this.bibRecord = bibRecords;
-    }
+  private List<BibRecord> bibRecord;
+
+  @XmlElement(name = "bibRecord")
+  public List<BibRecord> getBibRecords() {
+    return bibRecord;
+  }
+
+  public void setBibRecords(List<BibRecord> bibRecords) {
+    this.bibRecord = bibRecords;
+  }
 }

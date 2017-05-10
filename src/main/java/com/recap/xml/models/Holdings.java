@@ -5,14 +5,14 @@ import java.util.List;
 
 
 public class Holdings {
-    private List<Holding> holding;
+  private List<Holding> holding;
 
-    @XmlElement
-    public List<Holding> getHolding() {
-        return holding;
-    }
+  @XmlElement
+  public List<Holding> getHolding() {
+    return holding;
+  }
 
-    public void setHolding(List<Holding> holding) {
-        this.holding = holding;
-    }
+  public void setHolding(List<Holding> holding) {
+    this.holding = holding;
+  }
 }
