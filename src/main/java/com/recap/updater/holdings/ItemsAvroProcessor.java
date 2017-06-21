@@ -1,6 +1,8 @@
 package com.recap.updater.holdings;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.avro.Schema;
 import org.apache.camel.Exchange;
@@ -35,15 +37,19 @@ public class ItemsAvroProcessor implements Processor {
   @Override
   public void process(Exchange exchange) throws RecapHarvesterException, IOException {
     try {
-      Item item = exchange.getIn().getBody(Item.class);
-      logger.info("Item - " + new ObjectMapper().writeValueAsString(item));
+      List<Item> items = exchange.getIn().getBody(List.class);
+      List<byte[]> avroItems = new ArrayList<>();
       String schemaJson = new SchemaUtils().getSchema(retryTemplate, producerTemplate,
           EnvironmentConfig.ITEM_SCHEMA_API);
       Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
       AvroSchema avroSchema = new AvroSchema(schema);
       AvroMapper avroMapper = new AvroMapper();
-      byte[] avroItem = avroMapper.writer(avroSchema).writeValueAsBytes(item);
-      exchange.getIn().setBody(avroItem);
+      for (Item item : items) {
+        logger.info("Item - " + new ObjectMapper().writeValueAsString(item));
+        byte[] avroItem = avroMapper.writer(avroSchema).writeValueAsBytes(item);
+        avroItems.add(avroItem);
+      }
+      exchange.getIn().setBody(avroItems);
     } catch (JsonProcessingException jsonProcessingException) {
       logger.error("Error occurred while doing avro processing for item - ",
           jsonProcessingException);
