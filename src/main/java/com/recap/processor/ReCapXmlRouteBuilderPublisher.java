@@ -31,7 +31,7 @@ import com.recap.xml.models.BibRecord;
 @Component
 public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
 
-  @Value("${scsbexportstaging.location}")
+  @Value("${scsbexportstagingLocation}")
   private String scsbexportstaging;
 
   @Autowired
@@ -65,8 +65,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }
     }).handled(true);
 
-    from("file:" + scsbexportstaging + "?fileName=testrecord.xml&"
-        + "maxMessagesPerPoll=1&noop=true").split(body().tokenizeXML("bibRecord", "")).streaming()
+    from("file:" + scsbexportstaging
+        + "?maxMessagesPerPoll=1").split(body().tokenizeXML("bibRecord", "")).streaming()
             .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
 
     from("direct:bib").process(new BibProcessor(baseConfig))
@@ -75,7 +75,6 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           @Override
           public void process(Exchange exchange) throws Exception {
             byte[] body = (byte[]) exchange.getIn().getBody();
-            System.out.println(body);
             ByteBuffer byteBuffer = ByteBuffer.wrap(body);
             exchange.getIn().setBody(byteBuffer);
             exchange.getIn().setHeader(Constants.PARTITION_KEY, System.currentTimeMillis());
@@ -110,7 +109,6 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           @Override
           public void process(Exchange exchange) throws Exception {
             byte[] body = (byte[]) exchange.getIn().getBody();
-            System.out.println(body);
             ByteBuffer byteBuffer = ByteBuffer.wrap(body);
             exchange.getIn().setBody(byteBuffer);
             exchange.getIn().setHeader(Constants.PARTITION_KEY, System.currentTimeMillis());

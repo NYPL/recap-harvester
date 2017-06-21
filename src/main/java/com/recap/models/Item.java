@@ -32,7 +32,7 @@ public class Item {
   }
 
   public void setNyplSource(String nyplSource) {
-    this.nyplSource = nyplSource;
+    this.nyplSource = nyplSource.toLowerCase();
   }
 
   public String getNyplType() {
@@ -40,7 +40,7 @@ public class Item {
   }
 
   public void setNyplType(String nyplType) {
-    this.nyplType = nyplType;
+    this.nyplType = nyplType.toLowerCase();
   }
 
   public List<String> getBibIds() {
