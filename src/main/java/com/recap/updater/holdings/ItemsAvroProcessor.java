@@ -19,19 +19,21 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.recap.config.EnvironmentConfig;
 import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Item;
+import com.recap.updater.utils.NYPLSchema;
 import com.recap.updater.utils.SchemaUtils;
 
 public class ItemsAvroProcessor implements Processor {
 
-  private RetryTemplate retryTemplate;
-
-  private ProducerTemplate producerTemplate;
-
   private static Logger logger = LoggerFactory.getLogger(ItemsAvroProcessor.class);
 
-  public ItemsAvroProcessor(RetryTemplate retryTemplate, ProducerTemplate producerTemplate) {
-    this.retryTemplate = retryTemplate;
-    this.producerTemplate = producerTemplate;
+  private String schemaJson;
+
+  public ItemsAvroProcessor(NYPLSchema schema, RetryTemplate retryTemplate,
+      ProducerTemplate producerTemplate) throws RecapHarvesterException {
+    if (schema.getItemSchemaJson() == null)
+      schema.setItemSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate,
+          EnvironmentConfig.ITEM_SCHEMA_API));
+    this.schemaJson = schema.getItemSchemaJson();
   }
 
   @Override
@@ -39,8 +41,6 @@ public class ItemsAvroProcessor implements Processor {
     try {
       List<Item> items = exchange.getIn().getBody(List.class);
       List<byte[]> avroItems = new ArrayList<>();
-      String schemaJson = new SchemaUtils().getSchema(retryTemplate, producerTemplate,
-          EnvironmentConfig.ITEM_SCHEMA_API);
       Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
       AvroSchema avroSchema = new AvroSchema(schema);
       AvroMapper avroMapper = new AvroMapper();

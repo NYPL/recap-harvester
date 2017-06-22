@@ -75,8 +75,8 @@ public class SchemaUtils {
         apiResponse = out.getBody(String.class);
       }
 
-      logger.info("Sierra api response code - " + responseCode);
-      logger.info("Sierra api response body - " + apiResponse);
+      logger.info("schema api response code - " + responseCode);
+      logger.info("schema api response body - " + apiResponse);
 
       Map<String, Object> responseDeserialized =
           new ObjectMapper().readValue(apiResponse, Map.class);
@@ -84,9 +84,8 @@ public class SchemaUtils {
           (Map<String, Object>) responseDeserialized.get(Constants.SCHEMA_DATA);
       return (String) schemaData.get(Constants.SCHEMA_DATA_SCHEMA);
     } catch (Exception e) {
-      logger.error("Error occurred while processing camel exchange to get sierra response - ", e);
-      throw new RecapHarvesterException(
-          "Error while trying to get sierra response - " + e.getMessage());
+      logger.error("Error occurred while processing camel exchange to get schema response - ", e);
+      throw new RecapHarvesterException("Error while trying to get response - " + e.getMessage());
     }
   }
 

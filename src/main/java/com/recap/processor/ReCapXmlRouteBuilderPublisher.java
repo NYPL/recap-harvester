@@ -2,7 +2,6 @@ package com.recap.processor;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
@@ -27,6 +26,7 @@ import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsAvroProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
 import com.recap.updater.holdings.KinesisProcessor;
+import com.recap.updater.utils.NYPLSchema;
 import com.recap.xml.models.BibRecord;
 
 @Component
@@ -43,6 +43,9 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
 
   @Autowired
   private ProducerTemplate producerTemplate;
+
+  @Autowired
+  private NYPLSchema schema;
 
   private static Logger logger = LoggerFactory.getLogger(ReCapXmlRouteBuilderPublisher.class);
 
@@ -71,15 +74,24 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
         .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
 
     from("direct:bib").process(new BibProcessor(baseConfig))
-        .process(new BibAvroProcessor(producerTemplate, retryTemplate)).process(new Processor() {
+        .process(new BibAvroProcessor(schema, retryTemplate, producerTemplate))
+        .process(new Processor() {
 
           @Override
-          public void process(Exchange exchange) throws Exception {
-            byte[] body = (byte[]) exchange.getIn().getBody();
-            ByteBuffer byteBuffer = ByteBuffer.wrap(body);
-            exchange.getIn().setBody(byteBuffer);
-            exchange.getIn().setHeader(Constants.PARTITION_KEY, System.currentTimeMillis());
-            exchange.getIn().setHeader(Constants.SEQUENCE_NUMBER, System.currentTimeMillis());
+          public void process(Exchange exchange) throws RecapHarvesterException {
+            try {
+              byte[] body = (byte[]) exchange.getIn().getBody();
+              ByteBuffer byteBuffer = ByteBuffer.wrap(body);
+              exchange.getIn().setBody(byteBuffer);
+              exchange.getIn().setHeader(Constants.PARTITION_KEY, System.currentTimeMillis());
+              exchange.getIn().setHeader(Constants.SEQUENCE_NUMBER, System.currentTimeMillis());
+            } catch (Exception e) {
+              logger.error("Error occurred while setting up exchange for kinesis communication - ",
+                  e);
+              throw new RecapHarvesterException(
+                  "Error occurred while setting up exchange for kinesis communication - "
+                      + e.getMessage());
+            }
           }
         }).to("aws-kinesis://" + EnvironmentConfig.KINESIS_BIB_STREAM
             + "?amazonKinesisClient=#getAmazonKinesisClient");
@@ -104,7 +116,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
         exchange.getIn().setBody(exchangeContents);
       }
     }).process(new ItemsProcessor())
-        .process(new ItemsAvroProcessor(retryTemplate, producerTemplate))
+        .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate))
         .process(new KinesisProcessor(baseConfig));
   }
 
