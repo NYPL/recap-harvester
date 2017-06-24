@@ -15,5 +15,6 @@ public class Constants {
   public static final String SCHEMA_DATA_SCHEMA = "schema";
   public static final String NYPL_SOURCE_RECAP = "recap";
   public static final String NYPL_TYPE_BIB = "bib";
+  public static final int KINESIS_PUT_RECORDS_MAX_SIZE = 500;
 
 }
