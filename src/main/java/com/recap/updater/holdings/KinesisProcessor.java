@@ -13,6 +13,7 @@ import com.amazonaws.services.kinesis.model.PutRecordsRequest;
 import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
 import com.amazonaws.services.kinesis.model.PutRecordsResult;
 import com.amazonaws.services.kinesis.model.PutRecordsResultEntry;
+import com.google.common.collect.Lists;
 import com.recap.config.BaseConfig;
 import com.recap.config.EnvironmentConfig;
 import com.recap.constants.Constants;
@@ -32,28 +33,16 @@ public class KinesisProcessor implements Processor {
   public void process(Exchange exchange) throws RecapHarvesterException {
     try {
       List<byte[]> avroItems = exchange.getIn().getBody(List.class);
-      if (avroItems.size() > Constants.KINESIS_PUT_RECORDS_MAX_SIZE) {
-        splitItemsAndSendToKinesis(avroItems);
-      } else
-        sendToKinesis(avroItems);
+      List<List<byte[]>> listOfSplitItems =
+          Lists.partition(avroItems, Constants.KINESIS_PUT_RECORDS_MAX_SIZE);
+      for (List<byte[]> splitAvroItems : listOfSplitItems) {
+        sendToKinesis(splitAvroItems);
+      }
     } catch (Exception e) {
       logger.error("Error occurred while sending items to kinesis - ", e);
       throw new RecapHarvesterException(
           "Error occurred while sending records to kinesis - " + e.getMessage());
     }
-  }
-
-  public void splitItemsAndSendToKinesis(List<byte[]> avroItems) throws RecapHarvesterException {
-    List<byte[]> avroItemsInBatches = new ArrayList<>();
-    for (int i = 0; i < avroItems.size(); i++) {
-      avroItemsInBatches.add(avroItems.get(i));
-      if (avroItemsInBatches.size() == Constants.KINESIS_PUT_RECORDS_MAX_SIZE) {
-        sendToKinesis(avroItemsInBatches);
-        avroItemsInBatches = new ArrayList<>();
-      }
-    }
-    if (avroItemsInBatches.size() > 0)
-      sendToKinesis(avroItemsInBatches);
   }
 
   public boolean sendToKinesis(List<byte[]> avroItems) throws RecapHarvesterException {
