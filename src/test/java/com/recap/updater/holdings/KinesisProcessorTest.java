@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.recap.config.BaseConfig;
+import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
 
 public class KinesisProcessorTest extends ExchangeTestSupport {
@@ -31,7 +32,7 @@ public class KinesisProcessorTest extends ExchangeTestSupport {
   @Test
   public void processTestLessThanKinesisLimit() throws Exception {
     setUp();
-    List<byte[]> items = getListOfItems(499);
+    List<byte[]> items = getListOfItems(Constants.KINESIS_PUT_RECORDS_MAX_SIZE);
     KinesisProcessor kinesisProcessor = Mockito.spy(new KinesisProcessor(new BaseConfig()));
     doReturn(true).when(kinesisProcessor).sendToKinesis(items);
     exchange.getIn().setBody(items);
@@ -52,11 +53,11 @@ public class KinesisProcessorTest extends ExchangeTestSupport {
 
   @Test
   public void testSplitItemsAndSendToKinesis() throws RecapHarvesterException {
-    List<byte[]> items = getListOfItems(510);
+    List<byte[]> items = getListOfItems(1050);
     KinesisProcessor kinesisProcessor = Mockito.spy(new KinesisProcessor(mock(BaseConfig.class)));
     doReturn(true).when(kinesisProcessor).sendToKinesis(anyList());
     kinesisProcessor.splitItemsAndSendToKinesis(items);
-    verify(kinesisProcessor, times(2)).sendToKinesis(anyList());
+    verify(kinesisProcessor, times(3)).sendToKinesis(anyList());
   }
 
 }
