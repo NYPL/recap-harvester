@@ -17,20 +17,22 @@ import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.recap.config.EnvironmentConfig;
 import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
+import com.recap.updater.utils.NYPLSchema;
 import com.recap.updater.utils.SchemaUtils;
 
 
 public class BibAvroProcessor implements Processor {
 
-  private ProducerTemplate producerTemplate;
-
-  private RetryTemplate retryTemplate;
+  private String schemaJson;
 
   private static Logger logger = LoggerFactory.getLogger(BibAvroProcessor.class);
 
-  public BibAvroProcessor(ProducerTemplate producerTemplate, RetryTemplate retryTemplate) {
-    this.producerTemplate = producerTemplate;
-    this.retryTemplate = retryTemplate;
+  public BibAvroProcessor(NYPLSchema schema, RetryTemplate retryTemplate,
+      ProducerTemplate producerTemplate) throws RecapHarvesterException {
+    if (schema.getBibSchemaJson() == null)
+      schema.setBibSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate,
+          EnvironmentConfig.BIB_SCHEMA_API));
+    schemaJson = schema.getBibSchemaJson();
   }
 
   @Override
@@ -38,8 +40,6 @@ public class BibAvroProcessor implements Processor {
     try {
       Bib bib = exchange.getIn().getBody(Bib.class);
       logger.info(new ObjectMapper().writeValueAsString(bib));
-      String schemaJson = new SchemaUtils().getSchema(retryTemplate, producerTemplate,
-          EnvironmentConfig.BIB_SCHEMA_API);
       Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
       AvroSchema avroSchema = new AvroSchema(schema);
       AvroMapper avroMapper = new AvroMapper();
