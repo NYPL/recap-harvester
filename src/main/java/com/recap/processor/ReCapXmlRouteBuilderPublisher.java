@@ -2,12 +2,14 @@ package com.recap.processor;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.ZipFileDataFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +71,33 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }
     }).handled(true);
 
-    from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
-        .split(body().tokenizeXML("bibRecord", "")).streaming()
-        .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+    if (EnvironmentConfig.ONLY_DO_UPDATES) {
+      ZipFileDataFormat zipFile = new ZipFileDataFormat();
+      zipFile.setUsingIterator(true);
+      from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
+          + EnvironmentConfig.FTP_LOCATION + "?privateKeyFile="
+          + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
+          + "&consumer.delay=60000&streamDownload=true&move="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY).streamCaching()
+              .unmarshal(zipFile).split(bodyAs(Iterator.class)).streaming()
+              .to("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY);
+
+      from("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY
+          + "?maxMessagesPerPoll=1&recursive=true").choice()
+              .when(header("CamelFileNameOnly").endsWith(".xml")).to("direct:xmlProcessing")
+              .when(header("CamelFileNameOnly").endsWith(".json")).to("direct:jsonProcessing");
+    } else {
+      from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
+      .split(body().tokenizeXML("bibRecord", "")).streaming()
+      .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+    }  
+
+    from("direct:jsonProcessing")
+        .log("Received a JSON File for processing - " + header("CamelFileNameOnly")); // add
+                                                                                      // deletion
+                                                                                      // logic by
+                                                                                      // calling
+                                                                                      // Processor
 
     from("direct:bib").process(new BibProcessor(baseConfig))
         .process(new BibAvroProcessor(schema, retryTemplate, producerTemplate))
