@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.recap.config.BaseConfig;
 import com.recap.exceptions.BibFieldProcessingException;
 import com.recap.models.Bib;
-import com.recap.models.SubField;
+import com.recap.models.Subfield;
 import com.recap.models.VarField;
 import com.recap.xml.models.BibRecord;
 import com.recap.xml.models.ControlFieldType;
@@ -490,14 +490,14 @@ public class BibFieldsProcessor {
         varFieldObj.setInd2(varField.getInd2());
         varFieldObj.setMarcTag(varField.getTag());
         List<SubfieldatafieldType> subFields = varField.getSubfield();
-        List<SubField> subFieldObjects = new ArrayList<>();
+        List<Subfield> subFieldObjects = new ArrayList<>();
         for (SubfieldatafieldType subField : subFields) {
-          SubField subFieldObj = new SubField();
+          Subfield subFieldObj = new Subfield();
           subFieldObj.setContent(subField.getValue());
           subFieldObj.setTag(subField.getCode());
           subFieldObjects.add(subFieldObj);
         }
-        varFieldObj.setSubFields(subFieldObjects);
+        varFieldObj.setSubfields(subFieldObjects);
         varFieldObjects.add(varFieldObj);
       }
       VarField varFieldObjLeader = new VarField();

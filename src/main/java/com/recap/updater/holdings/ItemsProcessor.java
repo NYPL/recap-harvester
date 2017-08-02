@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.recap.constants.Constants;
 import com.recap.models.Bib;
 import com.recap.models.Item;
-import com.recap.models.SubField;
+import com.recap.models.Subfield;
 import com.recap.models.VarField;
 import com.recap.updater.bib.BibConstants;
 import com.recap.xml.models.DataFieldType;
@@ -147,7 +147,7 @@ public class ItemsProcessor implements Processor {
   }
 
   public String getVolPartYearInfo(VarField varFieldObj) {
-    for (SubField subField : varFieldObj.getSubFields()) {
+    for (Subfield subField : varFieldObj.getSubfields()) {
       if (subField.getTag().equals(ItemConstants.SUBFIELD_CODE_3)) {
         return subField.getContent();
       }
@@ -156,7 +156,7 @@ public class ItemsProcessor implements Processor {
   }
 
   public Item setItemId(Item item, VarField varFieldObj) {
-    for (SubField subField : varFieldObj.getSubFields()) {
+    for (Subfield subField : varFieldObj.getSubfields()) {
       if (subField.getTag().equals(ItemConstants.SUBFIELD_CODE_a)) {
         String id;
         if ((subField.getContent()).startsWith("."))
@@ -170,7 +170,7 @@ public class ItemsProcessor implements Processor {
   }
 
   public Item setStatus(Item item, VarField varFieldObj) {
-    for (SubField subField : varFieldObj.getSubFields()) {
+    for (Subfield subField : varFieldObj.getSubfields()) {
       if (subField.getTag().equals(ItemConstants.SUBFIELD_CODE_j)) {
         Map<String, String> status = new LinkedHashMap<>();
         if (subField.getContent().equals(ItemConstants.AVAILABLE)) {
@@ -187,7 +187,7 @@ public class ItemsProcessor implements Processor {
   }
 
   public String getBarcode(VarField varFieldObj) {
-    for (SubField subField : varFieldObj.getSubFields()) {
+    for (Subfield subField : varFieldObj.getSubfields()) {
       if (subField.getTag().equals(ItemConstants.SUBFIELD_CODE_p)) {
         return (subField.getContent());
       }
@@ -196,7 +196,7 @@ public class ItemsProcessor implements Processor {
   }
 
   public String getCopyNumber(VarField varFieldObj) {
-    for (SubField subField : varFieldObj.getSubFields()) {
+    for (Subfield subField : varFieldObj.getSubfields()) {
       if (subField.getTag().equals(ItemConstants.SUBFIELD_CODE_t)) {
         return subField.getContent();
       }
@@ -205,7 +205,7 @@ public class ItemsProcessor implements Processor {
   }
 
   public String getItemType(VarField varFieldObj) {
-    for (SubField subField : varFieldObj.getSubFields()) {
+    for (Subfield subField : varFieldObj.getSubfields()) {
       if (subField.getTag().equals(ItemConstants.SUBFIELD_CODE_h)) {
         return subField.getContent();
       }

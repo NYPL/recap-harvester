@@ -1,6 +1,6 @@
 package com.recap.models;
 
-public class SubField {
+public class Subfield {
 
   private String tag;
   private String content;

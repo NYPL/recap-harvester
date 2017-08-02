@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.recap.models.Bib;
-import com.recap.models.SubField;
+import com.recap.models.Subfield;
 import com.recap.models.VarField;
 import com.recap.xml.models.DataFieldType;
 import com.recap.xml.models.SubfieldatafieldType;
@@ -19,15 +19,15 @@ public class VarFieldsProcessor {
     varFieldObj.setInd1(dataField.getInd1());
     varFieldObj.setInd2(dataField.getInd2());
     varFieldObj.setMarcTag(dataField.getTag());
-    List<SubfieldatafieldType> subFields = dataField.getSubfield();
-    List<SubField> subFieldObjects = new ArrayList<>();
-    for (SubfieldatafieldType subField : subFields) {
-      SubField subFieldObj = new SubField();
+    List<SubfieldatafieldType> subfields = dataField.getSubfield();
+    List<Subfield> subFieldObjects = new ArrayList<>();
+    for (SubfieldatafieldType subField : subfields) {
+      Subfield subFieldObj = new Subfield();
       subFieldObj.setContent(subField.getValue());
       subFieldObj.setTag(subField.getCode());
       subFieldObjects.add(subFieldObj);
     }
-    varFieldObj.setSubFields(subFieldObjects);
+    varFieldObj.setSubfields(subFieldObjects);
     return varFieldObj;
   }
 
@@ -39,29 +39,29 @@ public class VarFieldsProcessor {
     varFieldObj.setInd1(" ");
     varFieldObj.setInd2(" ");
     varFieldObj.setMarcTag(ItemConstants.DATAFIELD_TAG_949);
-    List<SubField> subFields = new ArrayList<>();
+    List<Subfield> subFields = new ArrayList<>();
 
-    SubField callNumberSubField = new SubField();
+    Subfield callNumberSubField = new Subfield();
     callNumberSubField.setContent(callNumber);
     callNumberSubField.setTag(ItemConstants.SUBFIELD_CODE_a);
     subFields.add(callNumberSubField);
 
-    SubField volPartYearInfoSubField = new SubField();
+    Subfield volPartYearInfoSubField = new Subfield();
     volPartYearInfoSubField.setContent(volPartYearInfo);
     volPartYearInfoSubField.setTag(ItemConstants.SUBFIELD_CODE_c);
     subFields.add(volPartYearInfoSubField);
 
-    SubField subFieldg = new SubField();
+    Subfield subFieldg = new Subfield();
     subFieldg.setContent(copyNumber);
     subFieldg.setTag(ItemConstants.SUBFIELD_CODE_g);
     subFields.add(subFieldg);
 
-    SubField subFieldBarcode = new SubField();
+    Subfield subFieldBarcode = new Subfield();
     subFieldBarcode.setContent(barcode);
     subFieldBarcode.setTag(ItemConstants.SUBFIELD_CODE_i);
     subFields.add(subFieldBarcode);
 
-    SubField subFieldLocation = new SubField();
+    Subfield subFieldLocation = new Subfield();
     StringBuffer locationValue = new StringBuffer();
     locationValue.append(ItemConstants.RECAP_INITIALS);
     locationValue.append(bib.getNyplSource().substring(bib.getNyplSource().indexOf('-') + 1));
@@ -69,7 +69,7 @@ public class VarFieldsProcessor {
     subFieldLocation.setTag(ItemConstants.SUBFIELD_CODE_l);
     subFields.add(subFieldLocation);
 
-    SubField subFieldUseRestriction = new SubField();
+    Subfield subFieldUseRestriction = new Subfield();
     if (itemType.equals(ItemConstants.IN_LIBRARY_USE) || itemType.equals("")
         || itemType.equals(" ")) {
       subFieldUseRestriction.setContent(ItemConstants.ITEM_TYPE_VAL_2);
@@ -79,7 +79,7 @@ public class VarFieldsProcessor {
     subFieldUseRestriction.setTag(ItemConstants.SUBFIELD_CODE_o);
     subFields.add(subFieldUseRestriction);
 
-    SubField subFieldStatus = new SubField();
+    Subfield subFieldStatus = new Subfield();
     try {
       if (itemStatus != null
           && itemStatus.get(ItemConstants.CODE).equals(ItemConstants.AVAILABILITY_CODE_VAL))
@@ -93,14 +93,14 @@ public class VarFieldsProcessor {
     }
     subFields.add(subFieldStatus);
 
-    SubField subFieldItemType = new SubField();
+    Subfield subFieldItemType = new Subfield();
     Map<String, Object> itemTypeLabelVals =
         new ItemsProcessor().processItemTypeFromRecapItemType(bib, itemType);
     subFieldItemType.setContent((String) itemTypeLabelVals.get(ItemConstants.DISPLAY));
     subFieldItemType.setTag(ItemConstants.SUBFIELD_CODE_t);
     subFields.add(subFieldItemType);
 
-    varFieldObj.setSubFields(subFields);
+    varFieldObj.setSubfields(subFields);
     return varFieldObj;
 
   }

@@ -8,7 +8,7 @@ public class VarField {
   private String marcTag;
   private String ind1;
   private String ind2;
-  private List<SubField> subFields;
+  private List<Subfield> subfields;
   private String content;
 
   public String getFieldTag() {
@@ -43,12 +43,12 @@ public class VarField {
     this.ind2 = ind2;
   }
 
-  public List<SubField> getSubFields() {
-    return subFields;
+  public List<Subfield> getSubfields() {
+    return subfields;
   }
 
-  public void setSubFields(List<SubField> subFields) {
-    this.subFields = subFields;
+  public void setSubfields(List<Subfield> subfields) {
+    this.subfields = subfields;
   }
 
   public String getContent() {
