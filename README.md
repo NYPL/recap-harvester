@@ -10,7 +10,7 @@ TODO: note saying that this requires manual downloading & unzipping from SFTP.
 
 ### Environment Variables
 
-The following environment variables need to be set.
+The following environment variables need to be set. For different options to set AWS credentials, please refer to http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html.
 
 ```
 AWS_ACCESS_KEY_ID=[used-to-publish-to-kinesis]
