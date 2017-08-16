@@ -2,12 +2,15 @@ package com.recap.processor;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.ZipFileDataFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
 import com.recap.updater.bib.BibAvroProcessor;
 import com.recap.updater.bib.BibProcessor;
+import com.recap.updater.deletions.DeleteProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsAvroProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
@@ -43,6 +47,9 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
 
   @Autowired
   private ProducerTemplate producerTemplate;
+  
+  @Autowired
+  private CamelContext camelContext;
 
   @Autowired
   private NYPLSchema schema;
@@ -69,9 +76,57 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }
     }).handled(true);
 
-    from("file:" + scsbexportstaging + "?maxMessagesPerPoll=1")
-        .split(body().tokenizeXML("bibRecord", "")).streaming()
+    if (EnvironmentConfig.ONLY_DO_UPDATES) {
+      ZipFileDataFormat zipFile = new ZipFileDataFormat();
+      zipFile.setUsingIterator(true);
+      
+      from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
+          + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.FTP_ACCESSION_DIRECTORY + "?privateKeyFile="
+          + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
+          + "&consumer.delay=60000&streamDownload=true&move="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).streamCaching()
+              .unmarshal(zipFile).split(bodyAs(Iterator.class)).streaming()
+              .to("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/" + EnvironmentConfig.FTP_ACCESSION_DIRECTORY);
+      
+      from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
+          + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.FTP_DEACCESSION_DIRECTORY + "?privateKeyFile="
+          + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
+          + "&consumer.delay=60000&streamDownload=true&move="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).streamCaching()
+              .unmarshal(zipFile).split(bodyAs(Iterator.class)).streaming()
+              .to("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/" + EnvironmentConfig.FTP_DEACCESSION_DIRECTORY);
+      
+      
+      from("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/" + EnvironmentConfig.FTP_ACCESSION_DIRECTORY
+          + "?maxMessagesPerPoll=1&eagerMaxMessagesPerPoll=false&recursive=true&include=.*.xml").onCompletion().to("direct:xmlProcessing").end()
+      .process(new Processor() {
+        
+        @Override
+        public void process(Exchange exchange) throws Exception {
+          camelContext.startRoute("JsonStarter");
+        }
+      });
+              
+      from("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/" + EnvironmentConfig.FTP_DEACCESSION_DIRECTORY 
+          + "?maxMessagesPerPoll=1&recursive=true&include=.*.json").routeId("JsonStarter").autoStartup(false).to("direct:jsonProcessing");
+              
+    } else {
+      from("file:" + scsbexportstaging + "?maxMessagesPerPoll=1")
+          .split(body().tokenizeXML("bibRecord", "")).streaming()
+          .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+    }
+
+    from("direct:xmlProcessing").split(body().tokenizeXML("bibRecord", "")).streaming()
         .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+
+    from("direct:jsonProcessing")
+        .process(new DeleteProcessor()); // add
+                                                                                      // deletion
+                                                                                      // logic by
+                                                                                      // calling
+                                                                                      // Processor
 
     from("direct:bib").process(new BibProcessor(baseConfig))
         .process(new BibAvroProcessor(schema, retryTemplate, producerTemplate))
@@ -93,8 +148,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
                       + e.getMessage());
             }
           }
-        }).to("aws-kinesis://" + EnvironmentConfig.KINESIS_BIB_STREAM
-            + "?amazonKinesisClient=#getAmazonKinesisClient");
+        });/*.to("aws-kinesis://" + EnvironmentConfig.KINESIS_BIB_STREAM
+            + "?amazonKinesisClient=#getAmazonKinesisClient");*/
 
     from("direct:item").process(new Processor() {
 
@@ -116,8 +171,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
         exchange.getIn().setBody(exchangeContents);
       }
     }).process(new ItemsProcessor())
-        .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate))
-        .process(new KinesisProcessor(baseConfig));
+        .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate));
+        //.process(new KinesisProcessor(baseConfig));
   }
 
 }
