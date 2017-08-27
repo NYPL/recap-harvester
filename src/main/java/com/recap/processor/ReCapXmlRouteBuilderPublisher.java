@@ -69,7 +69,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }
     }).handled(true);
 
-    from("file:" + scsbexportstaging + "?maxMessagesPerPoll=1")
+    from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
         .split(body().tokenizeXML("bibRecord", "")).streaming()
         .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
 
