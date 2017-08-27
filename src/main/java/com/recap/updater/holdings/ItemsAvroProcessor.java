@@ -45,7 +45,6 @@ public class ItemsAvroProcessor implements Processor {
       AvroSchema avroSchema = new AvroSchema(schema);
       AvroMapper avroMapper = new AvroMapper();
       for (Item item : items) {
-        logger.info("Item - " + new ObjectMapper().writeValueAsString(item));
         byte[] avroItem = avroMapper.writer(avroSchema).writeValueAsBytes(item);
         avroItems.add(avroItem);
       }

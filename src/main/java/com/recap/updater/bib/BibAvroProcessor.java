@@ -39,7 +39,6 @@ public class BibAvroProcessor implements Processor {
   public void process(Exchange exchange) throws RecapHarvesterException, IOException {
     try {
       Bib bib = exchange.getIn().getBody(Bib.class);
-      logger.info(new ObjectMapper().writeValueAsString(bib));
       Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
       AvroSchema avroSchema = new AvroSchema(schema);
       AvroMapper avroMapper = new AvroMapper();
