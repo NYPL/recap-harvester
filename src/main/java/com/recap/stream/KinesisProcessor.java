@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.impl.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,11 +36,14 @@ public class KinesisProcessor implements Processor {
   @Override
   public void process(Exchange exchange) throws RecapHarvesterException {
     try {
-      List<byte[]> avroRecords = exchange.getIn().getBody(List.class);
-      List<List<byte[]>> listOfSplitRecords =
-          Lists.partition(avroRecords, Constants.KINESIS_PUT_RECORDS_MAX_SIZE);
-      for (List<byte[]> splitAvroRecords : listOfSplitRecords) {
-        sendToKinesis(splitAvroRecords);
+      Object body = exchange.getIn().getBody();
+      if(body != null && body.getClass() != DefaultMessage.class){
+        List<byte[]> avroRecords = exchange.getIn().getBody(List.class);
+        List<List<byte[]>> listOfSplitRecords =
+            Lists.partition(avroRecords, Constants.KINESIS_PUT_RECORDS_MAX_SIZE);
+        for (List<byte[]> splitAvroRecords : listOfSplitRecords) {
+          sendToKinesis(splitAvroRecords);
+        }
       }
     } catch (Exception e) {
       logger.error("Error occurred while sending records to kinesis - ", e);

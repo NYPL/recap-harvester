@@ -1,5 +1,7 @@
 package com.recap.updater.bib;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +10,7 @@ import org.apache.avro.Schema;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.impl.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.retry.support.RetryTemplate;
@@ -40,17 +43,20 @@ public class BibsAvroProcessor implements Processor {
   @Override
   public void process(Exchange exchange) throws RecapHarvesterException, IOException {
     try {
-      List<Bib> bibs = exchange.getIn().getBody(List.class);
-      List<byte[]> avroBibs = new ArrayList<>();
-      for(Bib bib : bibs){
-        System.out.println(new ObjectMapper().writeValueAsString(bib));
-        Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
-        AvroSchema avroSchema = new AvroSchema(schema);
-        AvroMapper avroMapper = new AvroMapper();
-        byte[] avroBib = avroMapper.writer(avroSchema).writeValueAsBytes(bib);
-        avroBibs.add(avroBib);
+      Object body = exchange.getIn().getBody();
+      if(body != null && body.getClass() != DefaultMessage.class){
+        List<Bib> bibs = exchange.getIn().getBody(List.class);
+        List<byte[]> avroBibs = new ArrayList<>();
+        for(Bib bib : bibs){
+          System.out.println(new ObjectMapper().writeValueAsString(bib));
+          Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
+          AvroSchema avroSchema = new AvroSchema(schema);
+          AvroMapper avroMapper = new AvroMapper();
+          byte[] avroBib = avroMapper.writer(avroSchema).writeValueAsBytes(bib);
+          avroBibs.add(avroBib);
+        }
+        exchange.getIn().setBody(avroBibs);
       }
-      exchange.getIn().setBody(avroBibs);
     } catch (JsonProcessingException jsonProcessingException) {
       logger.error("Error occurred while doing avro processing for bib - ",
           jsonProcessingException);
