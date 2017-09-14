@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
+import org.codehaus.jackson.map.ObjectMapper;
 
 public class DeleteInfoProcessor implements Processor{
   
