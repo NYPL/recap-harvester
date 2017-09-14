@@ -4,7 +4,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.recap.models.Bib;
-import com.recap.updater.bib.BibConstants;
 
 public class FixedFieldsProcessor {
 

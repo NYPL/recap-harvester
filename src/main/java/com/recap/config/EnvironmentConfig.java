@@ -30,9 +30,9 @@ public final class EnvironmentConfig {
 
   public static final String FTP_COMPRESSED_FILES_ERROR_DIRECTORY =
       System.getenv("ftpCompressedFilesFailedDirectory");
-  
-  public static final String FTP_ACCESSION_DIRECTORY = System.getenv("ftpAccessionDirectory");
-  
-  public static final String FTP_DEACCESSION_DIRECTORY = System.getenv("ftpDeaccessionDirectory");
+
+  public static final String ACCESSION_DIRECTORY = System.getenv("accessionDirectory");
+
+  public static final String DEACCESSION_DIRECTORY = System.getenv("deaccessionDirectory");
 
 }

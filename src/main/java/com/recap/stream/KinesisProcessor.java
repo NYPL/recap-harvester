@@ -1,4 +1,4 @@
-package com.recap.updater.holdings;
+package com.recap.stream;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -22,37 +22,40 @@ import com.recap.exceptions.RecapHarvesterException;
 public class KinesisProcessor implements Processor {
 
   private BaseConfig baseConfig;
+  
+  private String streamName;
 
   private static Logger logger = LoggerFactory.getLogger(KinesisProcessor.class);
 
-  public KinesisProcessor(BaseConfig baseConfig) {
+  public KinesisProcessor(BaseConfig baseConfig, String streamName) {
     this.baseConfig = baseConfig;
+    this.streamName = streamName;
   }
 
   @Override
   public void process(Exchange exchange) throws RecapHarvesterException {
     try {
-      List<byte[]> avroItems = exchange.getIn().getBody(List.class);
-      List<List<byte[]>> listOfSplitItems =
-          Lists.partition(avroItems, Constants.KINESIS_PUT_RECORDS_MAX_SIZE);
-      for (List<byte[]> splitAvroItems : listOfSplitItems) {
-        sendToKinesis(splitAvroItems);
+      List<byte[]> avroRecords = exchange.getIn().getBody(List.class);
+      List<List<byte[]>> listOfSplitRecords =
+          Lists.partition(avroRecords, Constants.KINESIS_PUT_RECORDS_MAX_SIZE);
+      for (List<byte[]> splitAvroRecords : listOfSplitRecords) {
+        sendToKinesis(splitAvroRecords);
       }
     } catch (Exception e) {
-      logger.error("Error occurred while sending items to kinesis - ", e);
+      logger.error("Error occurred while sending records to kinesis - ", e);
       throw new RecapHarvesterException(
           "Error occurred while sending records to kinesis - " + e.getMessage());
     }
   }
 
-  public boolean sendToKinesis(List<byte[]> avroItems) throws RecapHarvesterException {
+  public boolean sendToKinesis(List<byte[]> avroRecords) throws RecapHarvesterException {
     try {
       PutRecordsRequest putRecordsRequest = new PutRecordsRequest();
-      putRecordsRequest.setStreamName(EnvironmentConfig.KINESIS_ITEM_STREAM);
+      putRecordsRequest.setStreamName(streamName);
       List<PutRecordsRequestEntry> listPutRecordsRequestEntry = new ArrayList<>();
-      for (byte[] avroItem : avroItems) {
+      for (byte[] avroRecord : avroRecords) {
         PutRecordsRequestEntry putRecordsRequestEntry = new PutRecordsRequestEntry();
-        putRecordsRequestEntry.setData(ByteBuffer.wrap(avroItem));
+        putRecordsRequestEntry.setData(ByteBuffer.wrap(avroRecord));
         putRecordsRequestEntry.setPartitionKey(Long.toString(System.currentTimeMillis()));
         listPutRecordsRequestEntry.add(putRecordsRequestEntry);
       }
@@ -75,9 +78,9 @@ public class KinesisProcessor implements Processor {
       }
       return true;
     } catch (Exception e) {
-      logger.error("Error occurred while sending items to kinesis - ", e);
+      logger.error("Error occurred while sending records to kinesis - ", e);
       throw new RecapHarvesterException(
-          "Error occurred while sending items to kinesis - " + e.getMessage());
+          "Error occurred while sending records to kinesis - " + e.getMessage());
     }
   }
 

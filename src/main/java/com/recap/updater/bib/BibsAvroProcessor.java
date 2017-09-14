@@ -1,6 +1,8 @@
 package com.recap.updater.bib;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.avro.Schema;
 import org.apache.camel.Exchange;
@@ -21,13 +23,13 @@ import com.recap.updater.utils.NYPLSchema;
 import com.recap.updater.utils.SchemaUtils;
 
 
-public class BibAvroProcessor implements Processor {
+public class BibsAvroProcessor implements Processor {
 
   private String schemaJson;
 
-  private static Logger logger = LoggerFactory.getLogger(BibAvroProcessor.class);
+  private static Logger logger = LoggerFactory.getLogger(BibsAvroProcessor.class);
 
-  public BibAvroProcessor(NYPLSchema schema, RetryTemplate retryTemplate,
+  public BibsAvroProcessor(NYPLSchema schema, RetryTemplate retryTemplate,
       ProducerTemplate producerTemplate) throws RecapHarvesterException {
     if (schema.getBibSchemaJson() == null)
       schema.setBibSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate,
@@ -38,12 +40,17 @@ public class BibAvroProcessor implements Processor {
   @Override
   public void process(Exchange exchange) throws RecapHarvesterException, IOException {
     try {
-      Bib bib = exchange.getIn().getBody(Bib.class);
-      Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
-      AvroSchema avroSchema = new AvroSchema(schema);
-      AvroMapper avroMapper = new AvroMapper();
-      byte[] avroBib = avroMapper.writer(avroSchema).writeValueAsBytes(bib);
-      exchange.getIn().setBody(avroBib);
+      List<Bib> bibs = exchange.getIn().getBody(List.class);
+      List<byte[]> avroBibs = new ArrayList<>();
+      for(Bib bib : bibs){
+        System.out.println(new ObjectMapper().writeValueAsString(bib));
+        Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
+        AvroSchema avroSchema = new AvroSchema(schema);
+        AvroMapper avroMapper = new AvroMapper();
+        byte[] avroBib = avroMapper.writer(avroSchema).writeValueAsBytes(bib);
+        avroBibs.add(avroBib);
+      }
+      exchange.getIn().setBody(avroBibs);
     } catch (JsonProcessingException jsonProcessingException) {
       logger.error("Error occurred while doing avro processing for bib - ",
           jsonProcessingException);
