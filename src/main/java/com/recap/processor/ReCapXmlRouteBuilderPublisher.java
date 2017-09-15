@@ -85,8 +85,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
           + "&consumer.delay=60000&streamDownload=true&move="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).startupOrder(1).streamCaching()
-              .unmarshal(zipFile).split(bodyAs(Iterator.class)).streaming()
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
+              .split(bodyAs(Iterator.class)).streaming()
               .to("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
                   + EnvironmentConfig.ACCESSION_DIRECTORY);
 
@@ -95,7 +95,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       from("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
           + EnvironmentConfig.ACCESSION_DIRECTORY
           + "?delete=true&maxMessagesPerPoll=1&eagerMaxMessagesPerPoll=false&recursive=true&include=.*.xml")
-              .startupOrder(2).split(body().tokenizeXML("bibRecord", "")).streaming()
+              .split(body().tokenizeXML("bibRecord", "")).streaming()
               .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
 
 
@@ -105,67 +105,63 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
           + "&consumer.delay=60000&streamDownload=true&move="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).startupOrder(3).streamCaching()
-              .unmarshal(zipFile).split(bodyAs(Iterator.class)).streaming()
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
+              .split(bodyAs(Iterator.class)).streaming()
               .to("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
                   + EnvironmentConfig.DEACCESSION_DIRECTORY);
 
 
-      from("timer://startDeleteProcess?fixedRate=true&period=60000").startupOrder(4)
-          .process(new Processor() {
+      from("scheduler://deletionFilePoller?delay=60000").process(new Processor() {
 
-            @Override
-            public void process(Exchange exchange) throws RecapHarvesterException {
-              File scsbXmlFilesLocalDir = new File(EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY
-                  + "/" + EnvironmentConfig.ACCESSION_DIRECTORY);
-              boolean updatesAreDone = true;
-              for (File file : scsbXmlFilesLocalDir.listFiles()) {
-                if (file.getName().trim().endsWith(".xml")) {
-                  updatesAreDone = false;
+        @Override
+        public void process(Exchange exchange) throws RecapHarvesterException {
+          File scsbXmlFilesLocalDir = new File(EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
+              + EnvironmentConfig.ACCESSION_DIRECTORY);
+          boolean updatesAreDone = true;
+          for (File file : scsbXmlFilesLocalDir.listFiles()) {
+            if (file.getName().trim().endsWith(".xml")) {
+              updatesAreDone = false;
+              break;
+            }
+          }
+          if (updatesAreDone) {
+            File delInfoJsonFileLocalDir = new File(EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY
+                + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY);
+            File[] files = delInfoJsonFileLocalDir.listFiles();
+            if (files.length > 0) {
+              for (File file : delInfoJsonFileLocalDir.listFiles()) {
+                if (file.getName().trim().endsWith(".json")) {
+                  System.out.println(file.getName());
+                  exchange.getIn().setBody(delInfoJsonFileLocalDir, File.class);
                   break;
                 }
               }
-              if (updatesAreDone) {
-                File delInfoJsonFileLocalDir =
-                    new File(EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
-                        + EnvironmentConfig.DEACCESSION_DIRECTORY);
-                File[] files = delInfoJsonFileLocalDir.listFiles();
-                if(files.length > 0){
-                  for (File file : delInfoJsonFileLocalDir.listFiles()) {
-                    if (file.getName().trim().endsWith(".json")) {
-                      exchange.getIn().setBody(delInfoJsonFileLocalDir, File.class);
-                      break;
-                    }
-                  }
-                }
-              }
             }
-          })
-          .process(new DeleteInfoProcessor(true))
-          .multicast().to("direct:deletedBibsProcess", "direct:deletedItemsProcess");
+          }
+        }
+      }).process(new DeleteInfoProcessor(true)).multicast().to("direct:deletedBibsProcess",
+          "direct:deletedItemsProcess");
     } else {
       from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
           .split(body().tokenizeXML("bibRecord", "")).streaming()
           .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
     }
-    
-    
 
-    from("direct:bib").process(new BibProcessor(baseConfig))
-        .process(new Processor() {
-          
-          @Override
-          public void process(Exchange exchange) throws Exception {
-            Bib bib = exchange.getIn().getBody(Bib.class);
-            List<Bib> bibs = new ArrayList<>();
-            bibs.add(bib);
-            exchange.getIn().setBody(bibs);
-          }
-        })
-        .process(new BibsAvroProcessor(schema, retryTemplate, producerTemplate))
+
+
+    from("direct:bib").process(new BibProcessor(baseConfig)).process(new Processor() {
+
+      @Override
+      public void process(Exchange exchange) throws Exception {
+        Bib bib = exchange.getIn().getBody(Bib.class);
+        List<Bib> bibs = new ArrayList<>();
+        bibs.add(bib);
+        exchange.getIn().setBody(bibs);
+      }
+    }).process(new BibsAvroProcessor(schema, retryTemplate, producerTemplate))
         .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_BIB_STREAM));
-    
-    
+
+
 
     from("direct:item").process(new Processor() {
 
@@ -189,16 +185,16 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
     }).process(new ItemsProcessor())
         .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate))
         .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_ITEM_STREAM));
-    
-    
-    
+
+
+
     from("direct:deletedBibsProcess").process(new DeletedBibsProcessor())
-    .process(new BibsAvroProcessor(schema, retryTemplate, producerTemplate))
-    .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_BIB_STREAM));
-    
+        .process(new BibsAvroProcessor(schema, retryTemplate, producerTemplate))
+        .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_BIB_STREAM));
+
     from("direct:deletedItemsProcess").process(new DeletedItemsProcessor())
-    .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate))
-    .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_ITEM_STREAM));
+        .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate))
+        .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_ITEM_STREAM));
   }
 
 }

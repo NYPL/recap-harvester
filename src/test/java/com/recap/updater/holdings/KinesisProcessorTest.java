@@ -30,7 +30,8 @@ public class KinesisProcessorTest extends ExchangeTestSupport {
   public void testBelowKinesisLimit() throws Exception {
     setUp();
     List<byte[]> items = getListOfItems(10);
-    KinesisProcessor kinesisProcessor = Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
+    KinesisProcessor kinesisProcessor =
+        Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
     doReturn(true).when(kinesisProcessor).sendToKinesis(anyList());
     exchange.getIn().setBody(items);
     kinesisProcessor.process(exchange);
@@ -41,7 +42,8 @@ public class KinesisProcessorTest extends ExchangeTestSupport {
   public void testEqualToKinesisLimit() throws Exception {
     setUp();
     List<byte[]> items = getListOfItems(Constants.KINESIS_PUT_RECORDS_MAX_SIZE);
-    KinesisProcessor kinesisProcessor = Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
+    KinesisProcessor kinesisProcessor =
+        Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
     doReturn(true).when(kinesisProcessor).sendToKinesis(anyList());
     exchange.getIn().setBody(items);
     kinesisProcessor.process(exchange);
@@ -52,7 +54,8 @@ public class KinesisProcessorTest extends ExchangeTestSupport {
   public void testAboveKinesisLimit() throws Exception {
     setUp();
     List<byte[]> items = getListOfItems(510);
-    KinesisProcessor kinesisProcessor = Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
+    KinesisProcessor kinesisProcessor =
+        Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
     doReturn(true).when(kinesisProcessor).sendToKinesis(anyList());
     exchange.getIn().setBody(items);
     kinesisProcessor.process(exchange);
@@ -63,7 +66,8 @@ public class KinesisProcessorTest extends ExchangeTestSupport {
   public void testMoreThanDoubleOfKinesisLimit() throws Exception {
     setUp();
     List<byte[]> items = getListOfItems(1050);
-    KinesisProcessor kinesisProcessor = Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
+    KinesisProcessor kinesisProcessor =
+        Mockito.spy(new KinesisProcessor(new BaseConfig(), "mockKinesisStream"));
     doReturn(true).when(kinesisProcessor).sendToKinesis(anyList());
     exchange.getIn().setBody(items);
     kinesisProcessor.process(exchange);

@@ -43,7 +43,7 @@ public class ItemsAvroProcessor implements Processor {
   public void process(Exchange exchange) throws RecapHarvesterException, IOException {
     try {
       Object body = exchange.getIn().getBody();
-      if(body != null && body.getClass() != DefaultMessage.class){
+      if (body != null && body.getClass() != DefaultMessage.class) {
         List<Item> items = exchange.getIn().getBody(List.class);
         List<byte[]> avroItems = new ArrayList<>();
         Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);

@@ -23,7 +23,7 @@ import com.recap.exceptions.RecapHarvesterException;
 public class KinesisProcessor implements Processor {
 
   private BaseConfig baseConfig;
-  
+
   private String streamName;
 
   private static Logger logger = LoggerFactory.getLogger(KinesisProcessor.class);
@@ -37,7 +37,7 @@ public class KinesisProcessor implements Processor {
   public void process(Exchange exchange) throws RecapHarvesterException {
     try {
       Object body = exchange.getIn().getBody();
-      if(body != null && body.getClass() != DefaultMessage.class){
+      if (body != null && body.getClass() != DefaultMessage.class) {
         List<byte[]> avroRecords = exchange.getIn().getBody(List.class);
         List<List<byte[]>> listOfSplitRecords =
             Lists.partition(avroRecords, Constants.KINESIS_PUT_RECORDS_MAX_SIZE);

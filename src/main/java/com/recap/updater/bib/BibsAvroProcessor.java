@@ -44,10 +44,10 @@ public class BibsAvroProcessor implements Processor {
   public void process(Exchange exchange) throws RecapHarvesterException, IOException {
     try {
       Object body = exchange.getIn().getBody();
-      if(body != null && body.getClass() != DefaultMessage.class){
+      if (body != null && body.getClass() != DefaultMessage.class) {
         List<Bib> bibs = exchange.getIn().getBody(List.class);
         List<byte[]> avroBibs = new ArrayList<>();
-        for(Bib bib : bibs){
+        for (Bib bib : bibs) {
           System.out.println(new ObjectMapper().writeValueAsString(bib));
           Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
           AvroSchema avroSchema = new AvroSchema(schema);

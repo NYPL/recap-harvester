@@ -14,24 +14,24 @@ import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
 
-public class DeletedBibsProcessor implements Processor{
-  
+public class DeletedBibsProcessor implements Processor {
+
   private static Logger logger = LoggerFactory.getLogger(DeletedBibsProcessor.class);
 
   @Override
   public void process(Exchange exchange) throws RecapHarvesterException {
-    try{
+    try {
       Map<String, List<String>> deletedBibsAndItemsInMarcJson = exchange.getIn().getBody(Map.class);
-      if(deletedBibsAndItemsInMarcJson != null){
+      if (deletedBibsAndItemsInMarcJson != null) {
         List<String> bibsMarcInJson = deletedBibsAndItemsInMarcJson.get(Constants.DELETED_BIBS);
         List<Bib> deletedBibs = new ArrayList<>();
-        for(String bibInJson : bibsMarcInJson){
+        for (String bibInJson : bibsMarcInJson) {
           Bib bib = new ObjectMapper().readValue(bibInJson, Bib.class);
           deletedBibs.add(bib);
         }
         exchange.getIn().setBody(deletedBibs, List.class);
       }
-    }catch(Exception e){
+    } catch (Exception e) {
       logger.error("Error while converting marc in json bibs to bib objects - ", e);
       throw new RecapHarvesterException("Error while converting json to bib object");
     }
