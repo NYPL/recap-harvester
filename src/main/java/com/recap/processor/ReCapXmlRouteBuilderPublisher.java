@@ -131,7 +131,6 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
             if (files.length > 0) {
               for (File file : delInfoJsonFileLocalDir.listFiles()) {
                 if (file.getName().trim().endsWith(".json")) {
-                  System.out.println(file.getName());
                   exchange.getIn().setBody(delInfoJsonFileLocalDir, File.class);
                   break;
                 }
