@@ -69,14 +69,14 @@ public class Item {
   }
 
   public String getDeletedDate() {
-	return deletedDate;
-}
+    return deletedDate;
+  }
 
-public void setDeletedDate(String deletedDate) {
-	this.deletedDate = deletedDate;
-}
+  public void setDeletedDate(String deletedDate) {
+    this.deletedDate = deletedDate;
+  }
 
-public boolean isDeleted() {
+  public boolean isDeleted() {
     return deleted;
   }
 

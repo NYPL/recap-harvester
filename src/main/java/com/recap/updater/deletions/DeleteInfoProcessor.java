@@ -9,15 +9,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
-
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -31,7 +34,7 @@ public class DeleteInfoProcessor implements Processor {
   public DeleteInfoProcessor(boolean doCleanUp) {
     this.doCleanUp = doCleanUp;
   }
-  
+
   @Override
   public void process(Exchange exchange) throws RecapHarvesterException {
     try {
@@ -50,28 +53,45 @@ public class DeleteInfoProcessor implements Processor {
                 mapper.getTypeFactory().constructCollectionType(List.class, Map.class));
 
             for (Map<String, Map<String, Object>> bib : deletedJSON) {
-            	
-              Boolean deleteAllItems = (Boolean) bib.get("bib").get("deleteAllItems");
+
+              Map<String, Object> theBib = bib.get("bib");
+
+              Boolean deleteAllItems = (Boolean) theBib.get("deleteAllItems");
 
               if (deleteAllItems) {
-                // Go to Bib Service and get items for the bib.
-                // for each Item response
-                // push a JSON string that looks like this to deletedItems:
-                // {
-                // "id": "10000001",
-                // "deletedDate": "2011-02-28",
-                // "deleted": true
-                // },
+                RestTemplate foo = new RestTemplate();
+                HttpHeaders httpHeaders = new HttpHeaders();
+                httpHeaders.add("Authorization", "Bearer TOKEN HERE");
+                HttpEntity<String> httpEntity = new HttpEntity<>("parameters", httpHeaders);
+                String url = "https://API-DOMAIN/api/v0.1/bibs/recap-"
+                    + theBib.get("owningInstitutionCode").toString().toLowerCase() + "/"
+                    + theBib.get("owningInstitutionBibId") + "/items";
+                ResponseEntity<String> response =
+                    foo.exchange(url, HttpMethod.GET, httpEntity, String.class);
+                Map<String, List<Map<String, Object>>> data =
+                    new ObjectMapper().readValue(response.getBody(), Map.class);
+                List<Map<String, Object>> items = data.get("data");
+                for (Map<String, Object> item : items) {
+                  Map<String, String> itemRecord = new HashMap<>();
+                  itemRecord.put("owningInstitutionItemId", item.get("id").toString());
+                  itemRecord.put("owningInstitutionBibId",
+                      theBib.get("owningInstitutionBibId").toString());
+                  deletedItems.add(transformToDeleted(itemRecord, "item",
+                      theBib.get("owningInstitutionCode").toString()));
+                }
 
-                // Does this also need to insert something into
-                // deletedBibs?
-              } else {            	
-            	 List<Map<String, String>> items = (List) bib.get("bib").get("items");
-            	 
-            	 for (Map<String, String> item :  items) {
-            		deletedItems.add(transformToDeleted(item, "item", (String) bib.get("bib").get("owningInstitutionCode"))); 
-            	 }
-            	 logger.info("deleting individual items for " + bib.get("bib").get("owningInstitutionCode") + "-" + bib.get("bib").get("owningInstitutionBibId"));
+                Map<String, String> bibRecord = new HashMap<>();
+                bibRecord.put("owningInstitutionBibId",
+                    theBib.get("owningInstitutionBibId").toString());
+                deletedBibs.add(transformToDeleted(bibRecord, "bib",
+                    theBib.get("owningInstitutionCode").toString()));
+              } else {
+                List<Map<String, String>> items = (List) theBib.get("items");
+
+                for (Map<String, String> item : items) {
+                  deletedItems.add(transformToDeleted(item, "item",
+                      (String) theBib.get("owningInstitutionCode")));
+                }
               }
 
             }
@@ -95,26 +115,31 @@ public class DeleteInfoProcessor implements Processor {
     }
   }
 
-  private String transformToDeleted(Map<String, String> record, String bibOrItem, String owningInstitution) throws JsonGenerationException, JsonMappingException, IOException {
-	
-	Map<String, Object> deletedRecord = new HashMap<>();
-	DateFormat deleteDateFormat = new SimpleDateFormat("YYYY-MM-DD");
-	
-	deletedRecord.put("nyplSource", "recap-" + owningInstitution.toLowerCase());
-	deletedRecord.put("nyplType", bibOrItem);
-	deletedRecord.put("deletedDate", deleteDateFormat.format(new Date()));
-	deletedRecord.put("deleted", true);
-	deletedRecord.put("fixedFields", new HashMap<>());
-	deletedRecord.put("varFields", new ArrayList<>());
+  private String transformToDeleted(Map<String, String> record, String bibOrItem,
+      String owningInstitution) throws JsonGenerationException, JsonMappingException, IOException {
 
-	if (bibOrItem == "bib") {
-		deletedRecord.put("id", record.get("owningInstitutionBibId"));
-	} else {
-		deletedRecord.put("id", record.get("owningInstitutionItemId"));
-		deletedRecord.put("bibIds", new ArrayList<>());
-	}
-	
-	return new ObjectMapper().writeValueAsString(deletedRecord);	  
+    Map<String, Object> deletedRecord = new HashMap<>();
+    DateFormat deleteDateFormat = new SimpleDateFormat("YYYY-MM-dd");
+
+    deletedRecord.put("nyplSource", "recap-" + owningInstitution.toLowerCase());
+    deletedRecord.put("nyplType", bibOrItem);
+    deletedRecord.put("deletedDate", deleteDateFormat.format(new Date()));
+    deletedRecord.put("deleted", true);
+    deletedRecord.put("fixedFields", new HashMap<>());
+    deletedRecord.put("varFields", new ArrayList<>());
+
+    if (bibOrItem == "bib") {
+      deletedRecord.put("id", record.get("owningInstitutionBibId"));
+      logger.info(
+          "deleting the bib " + owningInstitution + "-" + record.get("owningInstitutionBibId"));
+    } else {
+      logger.info("deleting the individual item: " + owningInstitution + "-"
+          + record.get("owningInstitutionItemId"));
+      deletedRecord.put("id", record.get("owningInstitutionItemId"));
+      deletedRecord.put("bibIds", new ArrayList<>());
+    }
+
+    return new ObjectMapper().writeValueAsString(deletedRecord);
   }
 
 }
