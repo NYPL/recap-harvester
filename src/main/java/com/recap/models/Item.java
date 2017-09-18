@@ -11,6 +11,7 @@ public class Item {
   private List<String> bibIds;
   private String updatedDate;
   private String createdDate;
+  private String deletedDate;
   private boolean deleted;
   private Map<String, String> location;
   private Map<String, String> status;
@@ -67,7 +68,15 @@ public class Item {
     this.createdDate = createdDate;
   }
 
-  public boolean isDeleted() {
+  public String getDeletedDate() {
+	return deletedDate;
+}
+
+public void setDeletedDate(String deletedDate) {
+	this.deletedDate = deletedDate;
+}
+
+public boolean isDeleted() {
     return deleted;
   }
 
