@@ -6,9 +6,11 @@ public final class EnvironmentConfig {
 
   public static final String KINESIS_ITEM_STREAM = System.getenv("kinesisItemStream");
 
-  public static final String BIB_SCHEMA_API = System.getenv("bibSchemaAPI");
+  public static final String BIB_SCHEMA_API =
+      System.getenv("platformAPIBasePath") + System.getenv("bibSchemaPath");
 
-  public static final String ITEM_SCHEMA_API = System.getenv("itemSchemaAPI");
+  public static final String ITEM_SCHEMA_API =
+      System.getenv("platformAPIBasePath") + System.getenv("itemSchemaPath");
 
   public static final Boolean ONLY_DO_UPDATES =
       Boolean.valueOf(System.getenv("onlyDoUpdates").toLowerCase().trim());
@@ -34,5 +36,7 @@ public final class EnvironmentConfig {
   public static final String ACCESSION_DIRECTORY = System.getenv("accessionDirectory");
 
   public static final String DEACCESSION_DIRECTORY = System.getenv("deaccessionDirectory");
+
+  public static final String PLATFORM_BASE_API_PATH = System.getenv("platformAPIBasePath");
 
 }
