@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
 import org.codehaus.jackson.JsonGenerationException;
@@ -59,32 +60,20 @@ public class DeleteInfoProcessor implements Processor {
               Boolean deleteAllItems = (Boolean) theBib.get("deleteAllItems");
 
               if (deleteAllItems) {
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.add("Authorization", "Bearer TOKEN HERE");
-                HttpEntity<String> httpEntity = new HttpEntity<>("parameters", httpHeaders);
-                String url = "https://API-DOMAIN/api/v0.1/bibs/recap-"
-                    + theBib.get("owningInstitutionCode").toString().toLowerCase() + "/"
-                    + theBib.get("owningInstitutionBibId") + "/items";
-                ResponseEntity<String> response =
-                    restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
-                Map<String, List<Map<String, Object>>> data =
-                    new ObjectMapper().readValue(response.getBody(), Map.class);
-                List<Map<String, Object>> items = data.get("data");
-                for (Map<String, Object> item : items) {
+                List<String> itemIds = getItemIds(theBib.get("owningInstitutionCode").toString(), theBib.get("owningInstitutionBibId").toString());
+                
+                // First delete all items for the bib                
+                for (String itemId : itemIds) {
                   Map<String, String> itemRecord = new HashMap<>();
-                  itemRecord.put("owningInstitutionItemId", item.get("id").toString());
-                  itemRecord.put("owningInstitutionBibId",
-                      theBib.get("owningInstitutionBibId").toString());
-                  deletedItems.add(transformToDeleted(itemRecord, "item",
-                      theBib.get("owningInstitutionCode").toString()));
+                  itemRecord.put("owningInstitutionItemId", itemId);
+                  itemRecord.put("owningInstitutionBibId",theBib.get("owningInstitutionBibId").toString());
+                  deletedItems.add(transformToDeleted(itemRecord, "item", theBib.get("owningInstitutionCode").toString()));
                 }
-
+                
+                // Then delete the bib itself                 
                 Map<String, String> bibRecord = new HashMap<>();
-                bibRecord.put("owningInstitutionBibId",
-                    theBib.get("owningInstitutionBibId").toString());
-                deletedBibs.add(transformToDeleted(bibRecord, "bib",
-                    theBib.get("owningInstitutionCode").toString()));
+                bibRecord.put("owningInstitutionBibId",theBib.get("owningInstitutionBibId").toString());
+                deletedBibs.add(transformToDeleted(bibRecord, "bib", theBib.get("owningInstitutionCode").toString()));
               } else {
                 List<Map<String, String>> items = (List) theBib.get("items");
 
@@ -113,6 +102,36 @@ public class DeleteInfoProcessor implements Processor {
       throw new RecapHarvesterException(
           "Error while extracting bibs and items info from json file");
     }
+  }
+  
+  private List<String> getItemIds(String owningInstitutionCode, String owningInstitutionBibId) throws RecapHarvesterException{
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add("Authorization", "Bearer TOKEN HERE");
+    HttpEntity<String> httpEntity = new HttpEntity<>("parameters", httpHeaders);
+    String url = "https://API-DOMAIN/api/v0.1/bibs/recap-" + owningInstitutionCode.toLowerCase() + "/" + owningInstitutionBibId + "/items";
+    ResponseEntity<String> response =
+        restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+    List<String> itemIds = new ArrayList<>();
+    try {
+      Map<String, List<Map<String, Object>>> data =
+          new ObjectMapper().readValue(response.getBody(), Map.class);
+      List<Map<String, Object>> items = data.get("data");
+      
+      for (Map<String, Object> item : items) {
+       itemIds.add(item.get("id").toString());
+      }
+    } catch (JsonMappingException e) {
+      String errMessage = "JSON mapping failed while getting item ids " + e.getMessage();
+      logger.error(errMessage, e);
+      throw new RecapHarvesterException(errMessage);
+    } catch (Jsonpar e) {
+      String errMessage = "JSON parsing failed while getting item ids " + e.getMessage();
+      logger.error(errMessage, e);
+      throw new RecapHarvesterException(errMessage);
+    }
+    
+    return itemIds;
   }
 
   private String transformToDeleted(Map<String, String> record, String bibOrItem,
