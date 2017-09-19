@@ -17,6 +17,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.recap.config.EnvironmentConfig;
@@ -41,6 +46,10 @@ public class DeleteInfoProcessor implements Processor {
   private static final String ITEMS = "items";
   private static final String BIBS = "bibs";
   private static final String DATA = "data";
+
+  private String token;
+  private String tokenType;
+
 
   public DeleteInfoProcessor(boolean doCleanUp) {
     this.doCleanUp = doCleanUp;
@@ -148,41 +157,67 @@ public class DeleteInfoProcessor implements Processor {
     deletedBibs.add(transformToDeleted(bibRecord, Constants.BIB, owningInstitutionCode));
   }
 
-  private List<String> getItemIds(String owningInstitutionCode, String owningInstitutionBibId)
+  public List<String> getItemIds(String owningInstitutionCode, String owningInstitutionBibId)
       throws RecapHarvesterException {
+    RetryTemplate retryTemplate = new RetryTemplate();
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add("Authorization", "Bearer TOKEN HERE");
+    httpHeaders.add("Authorization", tokenType + " " + token);
     HttpEntity<String> httpEntity = new HttpEntity<>("parameters", httpHeaders);
     String url = EnvironmentConfig.PLATFORM_BASE_API_PATH + "/" + BIBS + "/"
         + Constants.NYPL_SOURCE_RECAP + "-" + owningInstitutionCode.toLowerCase() + "/"
         + owningInstitutionBibId + "/" + ITEMS;
-    ResponseEntity<String> response =
-        restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
-    List<String> itemIds = new ArrayList<>();
-    try {
-      Map<String, List<Map<String, Object>>> data =
-          new ObjectMapper().readValue(response.getBody(), Map.class);
-      List<Map<String, Object>> items = data.get(DATA);
+    List<String> itemIds =
+        retryTemplate.execute(new RetryCallback<List<String>, RecapHarvesterException>() {
 
-      for (Map<String, Object> item : items) {
-        itemIds.add(item.get("id").toString());
-      }
-    } catch (JsonMappingException e) {
-      String errMessage = "JSON mapping failed while getting item ids " + e.getMessage();
-      logger.error(errMessage + " ", e);
-      throw new RecapHarvesterException(errMessage);
-    } catch (JsonParseException e) {
-      String errMessage = "JSON parsing failed while getting item ids " + e.getMessage();
-      logger.error(errMessage + " ", e);
-      throw new RecapHarvesterException(errMessage);
-    } catch (IOException e) {
-      String errMessage = "IOException occurred while getting item ids " + e.getMessage();
-      logger.error(errMessage + " ", e);
-      throw new RecapHarvesterException(errMessage);
-    }
+          @Override
+          public List<String> doWithRetry(RetryContext context) throws RecapHarvesterException {
+            try {
+              List<String> itemIds = new ArrayList<>();
+              ResponseEntity<String> response =
+                  restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
+              Map<String, List<Map<String, Object>>> data =
+                  new ObjectMapper().readValue(response.getBody(), Map.class);
+              List<Map<String, Object>> items = data.get(DATA);
 
+              for (Map<String, Object> item : items) {
+                itemIds.add(item.get("id").toString());
+              }
+              return itemIds;
+            } catch (JsonMappingException e) {
+              String errMessage = "JSON mapping failed while getting item ids " + e.getMessage();
+              logger.error(errMessage + " ", e);
+              throw new RecapHarvesterException(errMessage);
+            } catch (JsonParseException e) {
+              String errMessage = "JSON parsing failed while getting item ids " + e.getMessage();
+              logger.error(errMessage + " ", e);
+              throw new RecapHarvesterException(errMessage);
+            } catch (IOException e) {
+              String errMessage = "IOException occurred while getting item ids " + e.getMessage();
+              logger.error(errMessage + " ", e);
+              throw new RecapHarvesterException(errMessage);
+            } catch (HttpClientErrorException e) {
+              if (e.getRawStatusCode() == 401) {
+                setNewToken();
+              }
+              throw new RecapHarvesterException(e.getMessage());
+            }
+          }
+        });
     return itemIds;
+  }
+
+  private void setNewToken() throws RecapHarvesterException {
+    try {
+      OAuth2Client oAuth2Client =
+          new OAuth2Client(EnvironmentConfig.NYPL_OAUTH_URL, EnvironmentConfig.NYPL_OAUTH_KEY,
+              EnvironmentConfig.NYPL_OAUTH_SECRET, "client_credentials");
+      OAuth2AccessToken oAuth2AccessToken = oAuth2Client.createAndGetOAuth2AccessToken();
+      token = oAuth2AccessToken.getValue();
+      tokenType = oAuth2AccessToken.getTokenType();
+    } catch (HttpClientErrorException e) {
+      throw new RecapHarvesterException("Unable to get NYPL token - " + e.getMessage());
+    }
   }
 
   private String transformToDeleted(Map<String, String> record, String bibOrItem,
