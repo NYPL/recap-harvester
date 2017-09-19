@@ -160,20 +160,20 @@ public class DeleteInfoProcessor implements Processor {
   public List<String> getItemIds(String owningInstitutionCode, String owningInstitutionBibId)
       throws RecapHarvesterException {
     RetryTemplate retryTemplate = new RetryTemplate();
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add("Authorization", tokenType + " " + token);
-    HttpEntity<String> httpEntity = new HttpEntity<>("parameters", httpHeaders);
-    String url = EnvironmentConfig.PLATFORM_BASE_API_PATH + "/" + BIBS + "/"
-        + Constants.NYPL_SOURCE_RECAP + "-" + owningInstitutionCode.toLowerCase() + "/"
-        + owningInstitutionBibId + "/" + ITEMS;
     List<String> itemIds =
         retryTemplate.execute(new RetryCallback<List<String>, RecapHarvesterException>() {
 
           @Override
           public List<String> doWithRetry(RetryContext context) throws RecapHarvesterException {
+            List<String> itemIds = new ArrayList<>();
             try {
-              List<String> itemIds = new ArrayList<>();
+              RestTemplate restTemplate = new RestTemplate();
+              HttpHeaders httpHeaders = new HttpHeaders();
+              httpHeaders.add("Authorization", tokenType + " " + token);
+              HttpEntity<String> httpEntity = new HttpEntity<>("parameters", httpHeaders);
+              String url = EnvironmentConfig.PLATFORM_BASE_API_PATH + "/" + BIBS + "/"
+                  + Constants.NYPL_SOURCE_RECAP + "-" + owningInstitutionCode.toLowerCase() + "/"
+                  + owningInstitutionBibId + "/" + ITEMS;
               ResponseEntity<String> response =
                   restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
               Map<String, List<Map<String, Object>>> data =
@@ -183,7 +183,6 @@ public class DeleteInfoProcessor implements Processor {
               for (Map<String, Object> item : items) {
                 itemIds.add(item.get("id").toString());
               }
-              return itemIds;
             } catch (JsonMappingException e) {
               String errMessage = "JSON mapping failed while getting item ids " + e.getMessage();
               logger.error(errMessage + " ", e);
@@ -199,9 +198,13 @@ public class DeleteInfoProcessor implements Processor {
             } catch (HttpClientErrorException e) {
               if (e.getRawStatusCode() == 401) {
                 setNewToken();
+                throw new RecapHarvesterException(e.getMessage());
+              } else if (e.getRawStatusCode() == 404) {
+                logger.error("No items found for the bib");
               }
-              throw new RecapHarvesterException(e.getMessage());
+
             }
+            return itemIds;
           }
         });
     return itemIds;
