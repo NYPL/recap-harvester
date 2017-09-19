@@ -59,7 +59,7 @@ public class DeleteInfoProcessor implements Processor {
               Boolean deleteAllItems = (Boolean) theBib.get("deleteAllItems");
 
               if (deleteAllItems) {
-                RestTemplate foo = new RestTemplate();
+                RestTemplate restTemplate = new RestTemplate();
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.add("Authorization", "Bearer TOKEN HERE");
                 HttpEntity<String> httpEntity = new HttpEntity<>("parameters", httpHeaders);
@@ -67,7 +67,7 @@ public class DeleteInfoProcessor implements Processor {
                     + theBib.get("owningInstitutionCode").toString().toLowerCase() + "/"
                     + theBib.get("owningInstitutionBibId") + "/items";
                 ResponseEntity<String> response =
-                    foo.exchange(url, HttpMethod.GET, httpEntity, String.class);
+                    restTemplate.exchange(url, HttpMethod.GET, httpEntity, String.class);
                 Map<String, List<Map<String, Object>>> data =
                     new ObjectMapper().readValue(response.getBody(), Map.class);
                 List<Map<String, Object>> items = data.get("data");
