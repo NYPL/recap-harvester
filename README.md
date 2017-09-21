@@ -30,6 +30,9 @@ IN PRODUCTION, WE USE ROLES TO ALLOW THE APP TO TALK TO KINESES
 AWS_ACCESS_KEY_ID="USED-TO-POST-TO-KINESIS"
 AWS_SECRET_ACCESS_KEY="USED-TO-POST-TO-KINESIS"
 
+NyplOAuthKey=[key-to-hit-platform-api]
+NyplOAuthSecret=[secret-to-hit-platform-api]
+NyplOAuthUrl=[https://fqdn/oauth/token]
 accessionDirectory=[remote-accession-directory-name]
 bibSchemaPath=[/current-schemas/BibPostRequest]
 deaccessionDirectory=[remote-deaccession-directory-name]
@@ -88,12 +91,11 @@ scsbexportstagingLocation=/var/app/current/scsbxml
       --instance_type m4.large \
       --instance_profile cloudwatchable-beanstalk \
       --cname recap-harvester-[environment] \
-      --vpc.id public-vpc \
-      --vpc.elbsubnets public-subnet-id-1 \
+      --single \
+      --vpc.id env-vpc \
       --vpc.ec2subnets private-subnet-id-1 \
       --tags Project=Discovery,harvester=recap_harvester \
       --keyname dgdvteam \
-      --scale 1 \
       --envvars KEYFROMABOVE="value",KEYFROMABOVE2="value" \
       --profile your-aws-profile-name
   ```
