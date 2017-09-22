@@ -19,5 +19,7 @@ public class Constants {
   public static final int KINESIS_PUT_RECORDS_MAX_SIZE = 500;
   public static final String DELETED_BIBS = "deletedBibs";
   public static final String DELETED_ITEMS = "deletedItems";
+  public static final String DOWNLOADED_UPDATES_ACCESSION_DIR = "downloaded-updates/SCSBXML";
+  public static final String DOWNLOADED_UPDATES_DEACCESSION_DIR = "downloaded-updates/JSON";
 
 }

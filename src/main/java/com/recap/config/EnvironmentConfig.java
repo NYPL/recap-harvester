@@ -32,9 +32,6 @@ public final class EnvironmentConfig {
   public static final String FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY =
       System.getenv(EnvironmentVariableNames.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY);
 
-  public static final String UNCOMPRESSED_FILES_DIRECTORY =
-      System.getenv(EnvironmentVariableNames.UNCOMPRESSED_FILES_DIRECTORY);
-
   public static final String FTP_COMPRESSED_FILES_ERROR_DIRECTORY =
       System.getenv(EnvironmentVariableNames.FTP_COMPRESSED_FILES_ERROR_DIRECTORY);
 

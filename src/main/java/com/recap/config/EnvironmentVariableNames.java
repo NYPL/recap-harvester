@@ -23,8 +23,6 @@ public class EnvironmentVariableNames {
   public static final String FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY =
       "ftpCompressedFilesProcessedDirectory";
 
-  public static final String UNCOMPRESSED_FILES_DIRECTORY = "uncompressedFilesDirectoryForUpdates";
-
   public static final String FTP_COMPRESSED_FILES_ERROR_DIRECTORY =
       "ftpCompressedFilesFailedDirectory";
 

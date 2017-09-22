@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import com.recap.config.EnvironmentVariableNames;
+import com.recap.constants.Constants;
 
 
 public class TestEnvironment {
@@ -24,7 +25,7 @@ public class TestEnvironment {
     envVariables.set(EnvironmentVariableNames.FTP_PRIVATE_KEY_FILE_LOCATION, "mockFtp");
     envVariables.set(EnvironmentVariableNames.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY, "mockFtp");
 
-    envVariables.set(EnvironmentVariableNames.UNCOMPRESSED_FILES_DIRECTORY, "mockDir");
+    envVariables.set(Constants.DOWNLOADED_UPDATES_ACCESSION_DIR, "mockDir");
     envVariables.set(EnvironmentVariableNames.FTP_COMPRESSED_FILES_ERROR_DIRECTORY, "mockDir");
     envVariables.set(EnvironmentVariableNames.ACCESSION_DIRECTORY, "mockDir");
     envVariables.set(EnvironmentVariableNames.DEACCESSION_DIRECTORY, "mockDir");

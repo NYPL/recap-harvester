@@ -12,6 +12,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.model.dataformat.ZipFileDataFormat;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,13 +88,11 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
               .split(bodyAs(Iterator.class)).streaming()
-              .to("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
-                  + EnvironmentConfig.ACCESSION_DIRECTORY);
+              .to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR);
 
 
 
-      from("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
-          + EnvironmentConfig.ACCESSION_DIRECTORY
+      from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
           + "?delete=true&maxMessagesPerPoll=1&eagerMaxMessagesPerPoll=false&recursive=true&include=.*.xml")
               .split(body().tokenizeXML("bibRecord", "")).streaming()
               .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
@@ -107,16 +106,15 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
               .split(bodyAs(Iterator.class)).streaming()
-              .to("file:" + EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
-                  + EnvironmentConfig.DEACCESSION_DIRECTORY);
+              .to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR);
 
 
       from("scheduler://deletionFilePoller?delay=60000").process(new Processor() {
 
         @Override
         public void process(Exchange exchange) throws RecapHarvesterException {
-          File scsbXmlFilesLocalDir = new File(EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY + "/"
-              + EnvironmentConfig.ACCESSION_DIRECTORY);
+          File scsbXmlFilesLocalDir = new File(Constants.DOWNLOADED_UPDATES_ACCESSION_DIR);
+          scsbXmlFilesLocalDir.mkdirs();
           boolean updatesAreDone = true;
           for (File file : scsbXmlFilesLocalDir.listFiles()) {
             if (file.getName().trim().endsWith(".xml")) {
@@ -125,8 +123,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
             }
           }
           if (updatesAreDone) {
-            File delInfoJsonFileLocalDir = new File(EnvironmentConfig.UNCOMPRESSED_FILES_DIRECTORY
-                + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY);
+            File delInfoJsonFileLocalDir = new File(Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR);
+            delInfoJsonFileLocalDir.mkdirs();
             File[] files = delInfoJsonFileLocalDir.listFiles();
             if (files.length > 0) {
               for (File file : delInfoJsonFileLocalDir.listFiles()) {
