@@ -35,6 +35,7 @@ NyplOAuthSecret=[secret-to-hit-platform-api]
 NyplOAuthUrl=[https://fqdn/oauth/token]
 accessionDirectory=[remote-accession-directory-name]
 bibSchemaPath=[/current-schemas/BibPostRequest]
+itemSchemaPath="/current-schemas/ItemPostRequest"
 deaccessionDirectory=[remote-deaccession-directory-name]
 ftpBaseLocation=[remote/path/to/parent/of/accession/and/deaccession/dirs]
 ftpCompressedFilesFailedDirectory=[remote-directory-name-for-error-files-to-go]
@@ -42,13 +43,10 @@ ftpCompressedFilesProcessedDirectory=[remote-directory-name-for-processed-files-
 ftpHostName="username@fqdn.com"
 ftpPort="2222"
 ftpPrivateKeyFileLocation="/full/path-to/sftp-servers/private-key"
-itemSchemaPath="/current-schemas/ItemPostRequest"
 kinesisBibStream="BibPostRequest"
 kinesisItemStream="ItemPostRequest"
 onlyDoUpdates="true"
 platformAPIBasePath="https://API-DOMAIN.com/api/v0.1"
-scsbexportstagingLocation="/local/full/path/to/where/files/get/downloaded"
-uncompressedFilesDirectoryForUpdates="/local/full/path/to/where/files/get/downloaded"
 ```
 
 ### Deploying to Elastic Beanstalk
