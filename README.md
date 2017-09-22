@@ -24,8 +24,12 @@ The following environment variables need to be set.
 Locally, this can be done in [an STS run configuration](https://stackoverflow.com/a/40482553).
 
 ```
+<!-- AWS CREDENTIALS ARE ONLY USED FOR LOCAL DEVELOPMENT,
+IN PRODUCTION, WE USE ROLES TO ALLOW THE APP TO TALK TO KINESES
+-->
 AWS_ACCESS_KEY_ID="USED-TO-POST-TO-KINESIS"
 AWS_SECRET_ACCESS_KEY="USED-TO-POST-TO-KINESIS"
+
 accessionDirectory=[remote-accession-directory-name]
 bibSchemaPath=[/current-schemas/BibPostRequest]
 deaccessionDirectory=[remote-deaccession-directory-name]
