@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -101,9 +102,10 @@ public class DeleteInfoProcessor implements Processor {
               deleteBib(theBib.get(OWNING_INSTITUTION_BIB_ID).toString(),
                   theBib.get(OWNING_INSTITUTION_CODE).toString(), deletedBibs);
             } else {
-              List<Map<String, String>> items = (List) theBib.get(ITEMS);
+              List<Map<String, Object>> items = (List) theBib.get(ITEMS);
 
-              for (Map<String, String> item : items) {
+              for (Map<String, Object> item : items) {
+                item.put("bibIds", Arrays.asList(theBib.get(OWNING_INSTITUTION_BIB_ID)));
                 deletedItems.add(transformToDeleted(item, Constants.ITEM,
                     (String) theBib.get(OWNING_INSTITUTION_CODE)));
               }
@@ -143,16 +145,17 @@ public class DeleteInfoProcessor implements Processor {
   private void deleteAllItems(List<String> itemIds, String owningInstitutionBibId,
       String owningInstitutionCode, List<String> deletedItems) throws RecapHarvesterException {
     for (String itemId : itemIds) {
-      Map<String, String> itemRecord = new HashMap<>();
+      Map<String, Object> itemRecord = new HashMap<>();
       itemRecord.put(OWNING_INSTITUTION_ITEM_ID, itemId);
       itemRecord.put(OWNING_INSTITUTION_BIB_ID, owningInstitutionBibId);
+      itemRecord.put("bibIds", Arrays.asList(owningInstitutionBibId));
       deletedItems.add(transformToDeleted(itemRecord, Constants.ITEM, owningInstitutionCode));
     }
   }
 
   private void deleteBib(String owningInstitutionBibId, String owningInstitutionCode,
       List<String> deletedBibs) throws RecapHarvesterException {
-    Map<String, String> bibRecord = new HashMap<>();
+    Map<String, Object> bibRecord = new HashMap<>();
     bibRecord.put(OWNING_INSTITUTION_BIB_ID, owningInstitutionBibId);
     deletedBibs.add(transformToDeleted(bibRecord, Constants.BIB, owningInstitutionCode));
   }
@@ -223,7 +226,7 @@ public class DeleteInfoProcessor implements Processor {
     }
   }
 
-  private String transformToDeleted(Map<String, String> record, String bibOrItem,
+  private String transformToDeleted(Map<String, Object> record, String bibOrItem,
       String owningInstitution) throws RecapHarvesterException {
 
     try {
@@ -246,7 +249,7 @@ public class DeleteInfoProcessor implements Processor {
         logger.info("deleting the individual item: " + owningInstitution + "-"
             + record.get(OWNING_INSTITUTION_ITEM_ID));
         deletedRecord.put("id", record.get(OWNING_INSTITUTION_ITEM_ID));
-        deletedRecord.put("bibIds", new ArrayList<>());
+        deletedRecord.put("bibIds", record.get("bibIds"));
       }
 
       return new ObjectMapper().writeValueAsString(deletedRecord);
