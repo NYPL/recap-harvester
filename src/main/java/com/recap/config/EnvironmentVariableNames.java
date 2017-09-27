@@ -13,9 +13,9 @@ public class EnvironmentVariableNames {
   public static final String ONLY_DO_UPDATES = "onlyDoUpdates";
 
   public static final String SCSB_EXPORT_STAGING_LOCATION = "scsbexportstagingLocation";
-  
+
   public static final String FTP_HOST = "ftpHostName";
-  
+
   public static final String FTP_PORT = "ftpPort";
 
   public static final String FTP_BASE_LOCATION = "ftpBaseLocation";

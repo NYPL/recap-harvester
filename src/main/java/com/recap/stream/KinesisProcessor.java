@@ -54,6 +54,8 @@ public class KinesisProcessor implements Processor {
 
   public boolean sendToKinesis(List<byte[]> avroRecords) throws RecapHarvesterException {
     try {
+      if (!(avroRecords.size() > 0))
+        return false;
       PutRecordsRequest putRecordsRequest = new PutRecordsRequest();
       putRecordsRequest.setStreamName(streamName);
       List<PutRecordsRequestEntry> listPutRecordsRequestEntry = new ArrayList<>();

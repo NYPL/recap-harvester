@@ -137,7 +137,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }).process(new DeleteInfoProcessor(true)).multicast().to("direct:deletedBibsProcess",
           "direct:deletedItemsProcess");
     } else {
-      String scsbexportstaging = System.getenv(EnvironmentVariableNames.SCSB_EXPORT_STAGING_LOCATION);
+      String scsbexportstaging =
+          System.getenv(EnvironmentVariableNames.SCSB_EXPORT_STAGING_LOCATION);
       from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
           .split(body().tokenizeXML("bibRecord", "")).streaming()
           .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
