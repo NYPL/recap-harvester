@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.recap.config.BaseConfig;
 import com.recap.config.EnvironmentConfig;
+import com.recap.config.EnvironmentVariableNames;
 import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
@@ -39,9 +40,6 @@ import com.recap.xml.models.BibRecord;
 
 @Component
 public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
-
-  @Value("${scsbexportstagingLocation}")
-  private String scsbexportstaging;
 
   @Autowired
   private BaseConfig baseConfig;
@@ -139,6 +137,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }).process(new DeleteInfoProcessor(true)).multicast().to("direct:deletedBibsProcess",
           "direct:deletedItemsProcess");
     } else {
+      String scsbexportstaging = System.getenv(EnvironmentVariableNames.SCSB_EXPORT_STAGING_LOCATION);
       from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
           .split(body().tokenizeXML("bibRecord", "")).streaming()
           .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
