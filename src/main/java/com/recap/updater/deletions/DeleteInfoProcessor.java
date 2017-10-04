@@ -22,20 +22,17 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.recap.config.EnvironmentConfig;
 import com.recap.constants.Constants;
-import com.recap.exceptions.NYPLTokenException;
 import com.recap.exceptions.RecapHarvesterException;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
-@Component
 public class DeleteInfoProcessor implements Processor {
 
   boolean doCleanUp = false;
