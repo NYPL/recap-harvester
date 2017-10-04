@@ -205,7 +205,7 @@ public class DeleteInfoProcessor implements Processor {
               if (e.getRawStatusCode() == 401) {
                 setNewToken();
                 tokenResetAttempts += 1;
-                if (tokenResetAttempts < 100) {
+                if (tokenResetAttempts >= 100) {
                   throw new RecapHarvesterException(
                       "Tried to reset nypl token several times with correct credentials. Response obtained though is Unauthorized!");
                 } else {
