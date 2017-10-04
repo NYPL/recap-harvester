@@ -52,13 +52,30 @@ public class KinesisProcessor implements Processor {
     }
   }
 
-  public boolean sendToKinesis(List<byte[]> avroRecords) throws RecapHarvesterException {
+  public void sendToKinesis(List<byte[]> avroRecords) throws RecapHarvesterException {
     try {
       if (!(avroRecords.size() > 0))
-        return false;
+        return;
+      List<PutRecordsRequestEntry> listPutRecordsRequestEntry = new ArrayList<>();
+      PutRecordsRequest putRecordsRequest =
+          createPutRecordsRequest(listPutRecordsRequestEntry, avroRecords);
+      PutRecordsResult putRecordsResult =
+          getPutRecordsResultAfterPostingToKinesis(putRecordsRequest);
+
+      validateResponse(putRecordsResult, listPutRecordsRequestEntry, putRecordsRequest);
+    } catch (Exception e) {
+      logger.error("Error occurred while sending records to kinesis - ", e);
+      throw new RecapHarvesterException(
+          "Error occurred while sending records to kinesis - " + e.getMessage());
+    }
+  }
+
+  public PutRecordsRequest createPutRecordsRequest(
+      List<PutRecordsRequestEntry> listPutRecordsRequestEntry, List<byte[]> avroRecords)
+      throws RecapHarvesterException {
+    try {
       PutRecordsRequest putRecordsRequest = new PutRecordsRequest();
       putRecordsRequest.setStreamName(streamName);
-      List<PutRecordsRequestEntry> listPutRecordsRequestEntry = new ArrayList<>();
       for (byte[] avroRecord : avroRecords) {
         PutRecordsRequestEntry putRecordsRequestEntry = new PutRecordsRequestEntry();
         putRecordsRequestEntry.setData(ByteBuffer.wrap(avroRecord));
@@ -66,27 +83,70 @@ public class KinesisProcessor implements Processor {
         listPutRecordsRequestEntry.add(putRecordsRequestEntry);
       }
       putRecordsRequest.setRecords(listPutRecordsRequestEntry);
-      PutRecordsResult putRecordsResult =
-          baseConfig.getAmazonKinesisClient().putRecords(putRecordsRequest);
-      while (putRecordsResult.getFailedRecordCount() > 0) {
-        final List<PutRecordsRequestEntry> failedRecordsList = new ArrayList<>();
-        final List<PutRecordsResultEntry> listPutRecordsResultEntry = putRecordsResult.getRecords();
-        for (int i = 0; i < listPutRecordsResultEntry.size(); i++) {
-          final PutRecordsRequestEntry putRecordsRequestEntry = listPutRecordsRequestEntry.get(i);
-          final PutRecordsResultEntry putRecordsResultEntry = listPutRecordsResultEntry.get(i);
-          if (putRecordsResultEntry.getErrorCode() != null) {
-            failedRecordsList.add(putRecordsRequestEntry);
-          }
-          listPutRecordsRequestEntry = failedRecordsList;
-          putRecordsRequest.setRecords(listPutRecordsRequestEntry);
-          putRecordsResult = baseConfig.getAmazonKinesisClient().putRecords(putRecordsRequest);
+      return putRecordsRequest;
+    } catch (Exception e) {
+      logger.error("Error occurred while creating PutRecordsRequest - " + e.getMessage());
+      throw new RecapHarvesterException(
+          "Returning error while trying to prepare PutRecordsRequest - " + e.getMessage());
+    }
+  }
+
+  public PutRecordsResult getPutRecordsResultAfterPostingToKinesis(
+      PutRecordsRequest putRecordsRequest) throws RecapHarvesterException {
+    try {
+      return baseConfig.getAmazonKinesisClient().putRecords(putRecordsRequest);
+    } catch (Exception e) {
+      logger.error(
+          "Error occurred on sending records to kinesis and retrieving PutRecordsResult - ", e);
+      throw new RecapHarvesterException(
+          "Error occurred on sending records to kinesis and retrieving PutRecordsResult "
+              + e.getMessage());
+    }
+  }
+
+  public void validateResponse(PutRecordsResult putRecordsResult,
+      List<PutRecordsRequestEntry> listPutRecordsRequestEntry, PutRecordsRequest putRecordsRequest)
+      throws RecapHarvesterException {
+    try {
+      if (!(putRecordsResult.getFailedRecordCount() > 0))
+        return;
+      else {
+        logger.info("Got some records didn't make it into kinesis - "
+            + putRecordsResult.getFailedRecordCount() + " - is the failed record count");
+        resendFailedRecordsToKinesis(putRecordsResult, listPutRecordsRequestEntry,
+            putRecordsRequest);
+      }
+    } catch (Exception e) {
+      logger.error(
+          "Error occurred while validating kinesis response after posting results to kinesis - ",
+          e);
+      throw new RecapHarvesterException(
+          "Error occurred while validating kinesis response after posting results to kinesis - "
+              + e.getMessage());
+    }
+  }
+
+  public void resendFailedRecordsToKinesis(PutRecordsResult putRecordsResult,
+      List<PutRecordsRequestEntry> listPutRecordsRequestEntry, PutRecordsRequest putRecordsRequest)
+      throws RecapHarvesterException {
+    try {
+      final List<PutRecordsRequestEntry> failedRecordsList = new ArrayList<>();
+      final List<PutRecordsResultEntry> listPutRecordsResultEntry = putRecordsResult.getRecords();
+      for (int i = 0; i < listPutRecordsResultEntry.size(); i++) {
+        final PutRecordsRequestEntry putRecordsRequestEntry = listPutRecordsRequestEntry.get(i);
+        final PutRecordsResultEntry putRecordsResultEntry = listPutRecordsResultEntry.get(i);
+        if (putRecordsResultEntry.getErrorCode() != null) {
+          failedRecordsList.add(putRecordsRequestEntry);
         }
       }
-      return true;
+      listPutRecordsRequestEntry = failedRecordsList;
+      putRecordsRequest.setRecords(listPutRecordsRequestEntry);
+      putRecordsResult = getPutRecordsResultAfterPostingToKinesis(putRecordsRequest);
+      validateResponse(putRecordsResult, listPutRecordsRequestEntry, putRecordsRequest);
     } catch (Exception e) {
-      logger.error("Error occurred while sending records to kinesis - ", e);
+      logger.error("Error occurred while resending records to kinesis - ", e);
       throw new RecapHarvesterException(
-          "Error occurred while sending records to kinesis - " + e.getMessage());
+          "Error occurred while resending records to kinesis - " + e.getMessage());
     }
   }
 
