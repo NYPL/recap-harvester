@@ -108,7 +108,7 @@ public class DeleteInfoProcessor implements Processor {
               List<Map<String, Object>> items = (List) theBib.get(ITEMS);
 
               for (Map<String, Object> item : items) {
-                item.put(BIB_IDS, Arrays.asList(theBib.get(OWNING_INSTITUTION_BIB_ID)));
+                item.put(BIB_IDS, Arrays.asList());
                 deletedItems.add(transformToDeleted(item, Constants.ITEM,
                     (String) theBib.get(OWNING_INSTITUTION_CODE)));
               }
@@ -151,7 +151,7 @@ public class DeleteInfoProcessor implements Processor {
       Map<String, Object> itemRecord = new HashMap<>();
       itemRecord.put(OWNING_INSTITUTION_ITEM_ID, itemId);
       itemRecord.put(OWNING_INSTITUTION_BIB_ID, owningInstitutionBibId);
-      itemRecord.put(BIB_IDS, Arrays.asList(owningInstitutionBibId));
+      itemRecord.put(BIB_IDS, Arrays.asList());
       deletedItems.add(transformToDeleted(itemRecord, Constants.ITEM, owningInstitutionCode));
     }
   }
@@ -258,7 +258,7 @@ public class DeleteInfoProcessor implements Processor {
         logger.info("deleting the individual item: " + owningInstitution + "-"
             + record.get(OWNING_INSTITUTION_ITEM_ID));
         deletedRecord.put("id", record.get(OWNING_INSTITUTION_ITEM_ID));
-        deletedRecord.put(BIB_IDS, record.get(BIB_IDS));
+        deletedRecord.put(BIB_IDS, Arrays.asList());
       }
 
       return new ObjectMapper().writeValueAsString(deletedRecord);
