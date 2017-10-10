@@ -28,3 +28,7 @@ nbdist/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# HTC Generated Files for processing
+downloaded-updates/JSON/*.json
+downloaded-updates/SCSBXML/*.xml

@@ -1,39 +1,43 @@
 package com.recap.processor;
 
-import java.nio.ByteBuffer;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.ZipFileDataFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 
 import com.recap.config.BaseConfig;
 import com.recap.config.EnvironmentConfig;
+import com.recap.config.EnvironmentVariableNames;
 import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
-import com.recap.updater.bib.BibAvroProcessor;
+import com.recap.stream.KinesisProcessor;
+import com.recap.updater.bib.BibsAvroProcessor;
 import com.recap.updater.bib.BibProcessor;
+import com.recap.updater.deletions.DeleteInfoProcessor;
+import com.recap.updater.deletions.DeletedBibsProcessor;
+import com.recap.updater.deletions.DeletedItemsProcessor;
 import com.recap.updater.holdings.HoldingListProcessor;
 import com.recap.updater.holdings.ItemsAvroProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
-import com.recap.updater.holdings.KinesisProcessor;
 import com.recap.updater.utils.NYPLSchema;
 import com.recap.xml.models.BibRecord;
 
 @Component
 public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
-
-  @Value("${scsbexportstagingLocation}")
-  private String scsbexportstaging;
 
   @Autowired
   private BaseConfig baseConfig;
@@ -69,32 +73,90 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }
     }).handled(true);
 
-    from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
-        .split(body().tokenizeXML("bibRecord", "")).streaming()
-        .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+    if (EnvironmentConfig.ONLY_DO_UPDATES) {
+      ZipFileDataFormat zipFile = new ZipFileDataFormat();
+      zipFile.setUsingIterator(true);
 
-    from("direct:bib").process(new BibProcessor(baseConfig))
-        .process(new BibAvroProcessor(schema, retryTemplate, producerTemplate))
-        .process(new Processor() {
+      from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
+          + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.ACCESSION_DIRECTORY
+          + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
+          + "&consumer.delay=60000&streamDownload=true&move="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
+              .split(bodyAs(Iterator.class)).streaming()
+              .to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR);
 
-          @Override
-          public void process(Exchange exchange) throws RecapHarvesterException {
-            try {
-              byte[] body = (byte[]) exchange.getIn().getBody();
-              ByteBuffer byteBuffer = ByteBuffer.wrap(body);
-              exchange.getIn().setBody(byteBuffer);
-              exchange.getIn().setHeader(Constants.PARTITION_KEY, System.currentTimeMillis());
-              exchange.getIn().setHeader(Constants.SEQUENCE_NUMBER, System.currentTimeMillis());
-            } catch (Exception e) {
-              logger.error("Error occurred while setting up exchange for kinesis communication - ",
-                  e);
-              throw new RecapHarvesterException(
-                  "Error occurred while setting up exchange for kinesis communication - "
-                      + e.getMessage());
+
+
+      from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
+          + "?delete=true&maxMessagesPerPoll=1&eagerMaxMessagesPerPoll=false&recursive=true&include=.*.xml")
+              .split(body().tokenizeXML("bibRecord", "")).streaming()
+              .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+
+
+
+      from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
+          + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY
+          + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
+          + "&consumer.delay=60000&streamDownload=true&move="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
+              .split(bodyAs(Iterator.class)).streaming()
+              .to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR);
+
+
+      from("scheduler://deletionFilePoller?delay=60000").process(new Processor() {
+
+        @Override
+        public void process(Exchange exchange) throws RecapHarvesterException {
+          File scsbXmlFilesLocalDir = new File(Constants.DOWNLOADED_UPDATES_ACCESSION_DIR);
+          scsbXmlFilesLocalDir.mkdirs();
+          boolean updatesAreDone = true;
+          for (File file : scsbXmlFilesLocalDir.listFiles()) {
+            if (file.getName().trim().endsWith(".xml")) {
+              updatesAreDone = false;
+              break;
             }
           }
-        }).to("aws-kinesis://" + EnvironmentConfig.KINESIS_BIB_STREAM
-            + "?amazonKinesisClient=#getAmazonKinesisClient");
+          if (updatesAreDone) {
+            File delInfoJsonFileLocalDir = new File(Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR);
+            delInfoJsonFileLocalDir.mkdirs();
+            File[] files = delInfoJsonFileLocalDir.listFiles();
+            if (files.length > 0) {
+              for (File file : delInfoJsonFileLocalDir.listFiles()) {
+                if (file.getName().trim().endsWith(".json")) {
+                  exchange.getIn().setBody(delInfoJsonFileLocalDir, File.class);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }).process(new DeleteInfoProcessor(true)).multicast().to("direct:deletedBibsProcess",
+          "direct:deletedItemsProcess");
+    } else {
+      String scsbexportstaging =
+          System.getenv(EnvironmentVariableNames.SCSB_EXPORT_STAGING_LOCATION);
+      from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
+          .split(body().tokenizeXML("bibRecord", "")).streaming()
+          .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+    }
+
+
+
+    from("direct:bib").process(new BibProcessor(baseConfig)).process(new Processor() {
+
+      @Override
+      public void process(Exchange exchange) throws Exception {
+        Bib bib = exchange.getIn().getBody(Bib.class);
+        List<Bib> bibs = new ArrayList<>();
+        bibs.add(bib);
+        exchange.getIn().setBody(bibs);
+      }
+    }).process(new BibsAvroProcessor(schema, retryTemplate, producerTemplate))
+        .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_BIB_STREAM));
+
+
 
     from("direct:item").process(new Processor() {
 
@@ -117,7 +179,17 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       }
     }).process(new ItemsProcessor())
         .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate))
-        .process(new KinesisProcessor(baseConfig));
+        .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_ITEM_STREAM));
+
+
+
+    from("direct:deletedBibsProcess").process(new DeletedBibsProcessor())
+        .process(new BibsAvroProcessor(schema, retryTemplate, producerTemplate))
+        .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_BIB_STREAM));
+
+    from("direct:deletedItemsProcess").process(new DeletedItemsProcessor())
+        .process(new ItemsAvroProcessor(schema, retryTemplate, producerTemplate))
+        .process(new KinesisProcessor(baseConfig, EnvironmentConfig.KINESIS_ITEM_STREAM));
   }
 
 }

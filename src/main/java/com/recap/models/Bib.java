@@ -10,6 +10,7 @@ public class Bib {
   private String nyplType;
   private String updatedDate;
   private String createdDate;
+  private String deletedDate;
   private Boolean deleted;
   private Boolean suppressed;
   private Map<String, String> lang;
@@ -60,6 +61,14 @@ public class Bib {
 
   public void setCreatedDate(String createdDate) {
     this.createdDate = createdDate;
+  }
+
+  public String getDeletedDate() {
+    return deletedDate;
+  }
+
+  public void setDeletedDate(String deletedDate) {
+    this.deletedDate = deletedDate;
   }
 
   public Boolean getDeleted() {
