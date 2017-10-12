@@ -40,7 +40,7 @@ public class ItemsProcessor implements Processor {
     List<Item> items = getListItems(listHolding, bib);
     exchangeContents.put(Constants.LIST_ITEMS, items);
     exchange.getIn().setBody(items);
-    logger.info("Processing items for bib - " + bib.getId());
+    logger.info("Processing items for bib - " + bib.getNyplSource() + " " + bib.getId());
   }
 
   public List<Item> getListItems(List<Holding> listHolding, Bib bib) {

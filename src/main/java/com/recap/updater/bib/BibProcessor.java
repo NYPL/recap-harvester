@@ -36,7 +36,7 @@ public class BibProcessor implements Processor {
     BibRecord bibRecord = (BibRecord) exchange.getIn().getBody();
     Bib bib = getBibFromBibRecord(bibRecord);
 
-    logger.info("Processing bib - " + bib.getId());
+    logger.info("Processing bib - " + bib.getNyplSource() + " " + bib.getId());
     exchange.getIn().setBody(bib);
   }
 
