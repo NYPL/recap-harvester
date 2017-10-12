@@ -49,6 +49,7 @@ kinesisBibStream="BibPostRequest"
 kinesisItemStream="ItemPostRequest"
 onlyDoUpdates="true"
 platformAPIBasePath="https://API-DOMAIN.com/api/v0.1"
+LC_ALL="en_US.UTF-8"
 ```
 
 ### Deploying to Elastic Beanstalk
