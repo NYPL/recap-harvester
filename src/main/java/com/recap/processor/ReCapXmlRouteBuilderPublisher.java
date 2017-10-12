@@ -6,11 +6,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.ZipFileDataFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,18 +76,32 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
     }).handled(true);
 
     if (EnvironmentConfig.ONLY_DO_UPDATES) {
-      ZipFileDataFormat zipFile = new ZipFileDataFormat();
-      zipFile.setUsingIterator(true);
 
       from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
           + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.ACCESSION_DIRECTORY
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
           + "&consumer.delay=60000&streamDownload=true&move="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
-              .split(bodyAs(Iterator.class)).streaming()
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).streamCaching()
               .to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR);
 
+
+      from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
+          + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
+              .process(new Processor() {
+
+                @Override
+                public void process(Exchange exchange) throws Exception {
+                  String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+                  String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
+                  if (fileName.endsWith(".xml")) {
+                    logger.info("Downloading contents of zipFile for accession -  " + zipFileName);
+                    exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".xml");
+                    logger.info("Renaming file name original - " + fileName + " to changed: "
+                        + (String) exchange.getIn().getHeader("CamelFileName"));
+                  }
+                }
+              }).to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR).end();
 
 
       from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
@@ -94,15 +110,33 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
               .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
 
 
-
       from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
           + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
           + "&consumer.delay=60000&streamDownload=true&move="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).unmarshal(zipFile)
-              .split(bodyAs(Iterator.class)).streaming()
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).streamCaching()
               .to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR);
+
+
+      from("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR
+          + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
+              .process(new Processor() {
+
+                @Override
+                public void process(Exchange exchange) throws Exception {
+                  String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+                  String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
+                  if (fileName.endsWith(".json")) {
+                    logger
+                        .info("Downloading contents of zipFile for deaccession -  " + zipFileName);
+                    exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".json");
+                    logger.info("Renaming file name original - " + fileName + " to changed: "
+                        + (String) exchange.getIn().getHeader("CamelFileName"));
+                  }
+                }
+              }).to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR).end();
+
 
 
       from("scheduler://deletionFilePoller?delay=60000").process(new Processor() {
@@ -113,7 +147,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           scsbXmlFilesLocalDir.mkdirs();
           boolean updatesAreDone = true;
           for (File file : scsbXmlFilesLocalDir.listFiles()) {
-            if (file.getName().trim().endsWith(".xml")) {
+            if (file.getName().trim().endsWith(".zip") || file.getName().trim().endsWith(".xml")) {
               updatesAreDone = false;
               break;
             }
@@ -134,6 +168,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
         }
       }).process(new DeleteInfoProcessor(true)).multicast().to("direct:deletedBibsProcess",
           "direct:deletedItemsProcess");
+
     } else {
       String scsbexportstaging =
           System.getenv(EnvironmentVariableNames.SCSB_EXPORT_STAGING_LOCATION);
