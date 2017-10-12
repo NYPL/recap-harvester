@@ -82,13 +82,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
           + "&consumer.delay=60000&streamDownload=true&move="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).streamCaching()
-              .to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR);
-
-
-      from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
-          + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
-              .process(new Processor() {
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).split(new ZipSplitter())
+              .streaming().process(new Processor() {
 
                 @Override
                 public void process(Exchange exchange) throws Exception {
@@ -115,13 +110,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
           + "&consumer.delay=60000&streamDownload=true&move="
           + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).streamCaching()
-              .to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR);
-
-
-      from("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR
-          + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
-              .process(new Processor() {
+          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).split(new ZipSplitter())
+              .streaming().process(new Processor() {
 
                 @Override
                 public void process(Exchange exchange) throws Exception {
@@ -136,7 +126,6 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
                   }
                 }
               }).to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR).end();
-
 
 
       from("scheduler://deletionFilePoller?delay=60000").process(new Processor() {
