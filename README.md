@@ -24,11 +24,13 @@ The following environment variables need to be set.
 Locally, this can be done in [an STS run configuration](https://stackoverflow.com/a/40482553).
 
 ```
-<!-- AWS CREDENTIALS ARE ONLY USED FOR LOCAL DEVELOPMENT,
-IN PRODUCTION, WE USE ROLES TO ALLOW THE APP TO TALK TO KINESES
--->
+<!-- AWS credentials are only used for local development, in production, we use roles to allow the app to talk to kineses -->
 AWS_ACCESS_KEY_ID="USED-TO-POST-TO-KINESIS"
 AWS_SECRET_ACCESS_KEY="USED-TO-POST-TO-KINESIS"
+
+<! -- These don't need to be set locally. They're read by files in .ebextensions when deployed to download the SSH key used for SFTP -->
+S3_URL_TO_SSH_KEY=https://s3.amazonaws.com/a-bucket-name/private_key_name
+SSH_KEY_BUCKET_NAME=a-bucket-name
 
 NyplOAuthKey=[key-to-hit-platform-api]
 NyplOAuthSecret=[secret-to-hit-platform-api]

@@ -210,7 +210,8 @@ public class DeleteInfoProcessor implements Processor {
                   getItemIds(owningInstitutionCode, owningInstitutionBibId);
                 }
               } else if (e.getRawStatusCode() == 404) {
-                logger.error("No items found for the bib");
+                logger.error("No items found for the bib " + owningInstitutionCode + " "
+                    + owningInstitutionBibId);
               }
 
             }

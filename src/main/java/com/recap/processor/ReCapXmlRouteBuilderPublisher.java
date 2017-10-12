@@ -100,6 +100,24 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
 
 
       from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
+          + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
+              .process(new Processor() {
+
+                @Override
+                public void process(Exchange exchange) throws Exception {
+                  String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+                  String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
+                  if (fileName.endsWith(".xml")) {
+                    logger.info("Downloading contents of zipFile for accession -  " + zipFileName);
+                    exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".xml");
+                    logger.info("Renaming file name original - " + fileName + " to changed: "
+                        + (String) exchange.getIn().getHeader("CamelFileName"));
+                  }
+                }
+              }).to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR).end();
+
+
+      from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
           + "?delete=true&maxMessagesPerPoll=1&eagerMaxMessagesPerPoll=false&recursive=true&include=.*.xml")
               .split(body().tokenizeXML("bibRecord", "")).streaming()
               .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
@@ -126,6 +144,26 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
                   }
                 }
               }).to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR).end();
+
+
+      from("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR
+          + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
+              .process(new Processor() {
+
+                @Override
+                public void process(Exchange exchange) throws Exception {
+                  String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+                  String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
+                  if (fileName.endsWith(".json")) {
+                    logger
+                        .info("Downloading contents of zipFile for deaccession -  " + zipFileName);
+                    exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".json");
+                    logger.info("Renaming file name original - " + fileName + " to changed: "
+                        + (String) exchange.getIn().getHeader("CamelFileName"));
+                  }
+                }
+              }).to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR).end();
+
 
 
       from("scheduler://deletionFilePoller?delay=60000").process(new Processor() {
