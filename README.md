@@ -89,7 +89,7 @@ scsbexportstagingLocation=/var/app/current/scsbxml
 
   ```bash
   eb create recap-harvester-[environment] \
-      --instance_type m4.large \
+      --instance_type m3.medium \
       --instance_profile cloudwatchable-beanstalk \
       --cname recap-harvester-[environment] \
       --single \
