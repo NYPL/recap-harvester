@@ -88,9 +88,9 @@ scsbexportstagingLocation=/var/app/current/scsbxml
 1.  Create application
 
   ```bash
-  eb create recap-harvester-[environment] \
+  eb create [nightly|initial]-recap-harvester-[environment] \
       --instance_type m3.medium \
-      --instance_profile cloudwatchable-beanstalk \
+      --instance_profile [nightly|initial]-cloudwatchable-beanstalk \
       --cname recap-harvester-[environment] \
       --single \
       --vpc.id env-vpc \
