@@ -52,6 +52,23 @@ platformAPIBasePath="https://API-DOMAIN.com/api/v0.1"
 LC_ALL="en_US.UTF-8"
 ```
 
+### Running locally
+
+Create a copy of your `.env` (as, say, `.env-qa-export`) with all variables mentioned above, but where each variable is preceded with `export SET`, like:
+
+```
+export SET NyplOAuthKey=recap_harvester
+export SET NyplOAuthUrl=https://isso.nypl.org/oauth/token
+export SET accessionDirectory=SCSBXml/Incremental
+...
+```
+
+This allows you to `source` the file into your shell and run the app:
+
+```
+source .env-qa-export; mvn spring-boot:run
+```
+
 ### Deploying to Elastic Beanstalk
 
 TODO: fill this out as we figure it out.

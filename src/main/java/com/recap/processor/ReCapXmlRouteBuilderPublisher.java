@@ -77,6 +77,11 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
 
     if (EnvironmentConfig.ONLY_DO_UPDATES) {
 
+      // Incremental updates:
+      // Fetch /share/recap/data-dump/uat/NYPL/SCSBXml/Incremental/*.zip
+      // Move successes to processedFiles, failures to errorFiles (local??)
+      // For each zip, rename each enclosed xml file to an xml file with a randome uuid filename
+      // Write updated zips to downloaded-updates/SCSBXML
       from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
           + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.ACCESSION_DIRECTORY
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
@@ -99,6 +104,9 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
               }).to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR).end();
 
 
+      // Loop over downloaded-updates/SCSBXML
+      // .. Doing the same thing as above? (For each zip, renames enclosed xml to a random uuid xml filename?)
+      // Writes xmls to downloaded-updates/SCSBXML
       from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
           + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
               .process(new Processor() {
@@ -117,12 +125,18 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
               }).to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR).end();
 
 
+      // For each xml in downloaded-updates/SCSBXML
+      // For each bibRecord in the document, write to `direct:bib` and `direct:item`
       from("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR
           + "?delete=true&maxMessagesPerPoll=1&eagerMaxMessagesPerPoll=false&recursive=true&include=.*.xml")
               .split(body().tokenizeXML("bibRecord", "")).streaming()
               .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
 
 
+      // Do deaccessions:
+      // Fetch /share/recap/data-dump/uat/NYPL/Json/*.zip
+      // Rename all included jsons in each zip with random uuids
+      // Place updated zips in local directory: downloaded-updates/JSON
       from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
           + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY
           + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
@@ -145,7 +159,9 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
                 }
               }).to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR).end();
 
-
+      // Loop over downloaded-updates/JSON
+      // Appears to repeat work above of renaming the files in each zip with random uuids
+      // Assume it's writing the jsons to downloaded-updates/JSON
       from("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR
           + "?maxMessagesPerPoll=1&delete=true&include=.*.zip").split(new ZipSplitter()).streaming()
               .process(new Processor() {
