@@ -19,14 +19,20 @@ public class TestEnvironment {
     envVariables.set(EnvironmentVariableNames.BIB_SCHEMA_PATH, "mockSchema");
     envVariables.set(EnvironmentVariableNames.ITEM_SCHEMA_PATH, "mockSchema");
     envVariables.set(EnvironmentVariableNames.ONLY_DO_UPDATES, "mockOnlyDoUpdates");
+    /*
     envVariables.set(EnvironmentVariableNames.FTP_HOST, "mockFtp");
     envVariables.set(EnvironmentVariableNames.FTP_PORT, "mockFtp");
     envVariables.set(EnvironmentVariableNames.FTP_BASE_LOCATION, "mockFtp");
     envVariables.set(EnvironmentVariableNames.FTP_PRIVATE_KEY_FILE_LOCATION, "mockFtp");
     envVariables.set(EnvironmentVariableNames.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY, "mockFtp");
+    */
+    envVariables.set(EnvironmentVariableNames.S3_BUCKET, "s3Bucket");
+    envVariables.set(EnvironmentVariableNames.S3_BASE_LOCATION, "mockS3");
+    envVariables.set(EnvironmentVariableNames.S3_COMPRESSED_FILES_PROCESSED_DIRECTORY, "mockS3");
 
     envVariables.set(Constants.DOWNLOADED_UPDATES_ACCESSION_DIR, "mockDir");
-    envVariables.set(EnvironmentVariableNames.FTP_COMPRESSED_FILES_ERROR_DIRECTORY, "mockDir");
+    // envVariables.set(EnvironmentVariableNames.FTP_COMPRESSED_FILES_ERROR_DIRECTORY, "mockDir");
+    envVariables.set(EnvironmentVariableNames.S3_COMPRESSED_FILES_ERROR_DIRECTORY, "mockDir");
     envVariables.set(EnvironmentVariableNames.ACCESSION_DIRECTORY, "mockDir");
     envVariables.set(EnvironmentVariableNames.DEACCESSION_DIRECTORY, "mockDir");
     envVariables.set(EnvironmentVariableNames.NYPL_OAUTH_KEY, "mockKey");

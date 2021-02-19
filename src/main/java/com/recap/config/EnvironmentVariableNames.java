@@ -14,23 +14,21 @@ public class EnvironmentVariableNames {
 
   public static final String SCSB_EXPORT_STAGING_LOCATION = "scsbexportstagingLocation";
 
-  public static final String FTP_HOST = "ftpHostName";
+  public static final String S3_BASE_LOCATION = "s3BaseLocation";
 
-  public static final String FTP_PORT = "ftpPort";
+  public static final String S3_BUCKET = "s3Bucket";
 
-  public static final String FTP_BASE_LOCATION = "ftpBaseLocation";
+  public static final String S3_ACCESS_KEY = "s3AccessKey";
 
-  public static final String FTP_PRIVATE_KEY_FILE_LOCATION = "ftpPrivateKeyFileLocation";
-
-  public static final String FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY =
-      "ftpCompressedFilesProcessedDirectory";
-
-  public static final String FTP_COMPRESSED_FILES_ERROR_DIRECTORY =
-      "ftpCompressedFilesFailedDirectory";
+  public static final String S3_SECRET_KEY = "s3SecretKey";
 
   public static final String ACCESSION_DIRECTORY = "accessionDirectory";
+  
+  public static final String ACCESSION_PROCESSED_DIRECTORY = "accessionProcessedDirectory";
 
   public static final String DEACCESSION_DIRECTORY = "deaccessionDirectory";
+
+  public static final String DEACCESSION_PROCESSED_DIRECTORY = "deaccessionProcessedDirectory";
 
   public static final String PLATFORM_BASE_API_PATH = "platformAPIBasePath";
 

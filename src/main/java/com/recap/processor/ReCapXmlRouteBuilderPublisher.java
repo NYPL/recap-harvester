@@ -12,8 +12,11 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
+import static org.apache.camel.builder.PredicateBuilder.not;
+import static org.apache.camel.builder.PredicateBuilder.and;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.ZipFileDataFormat;
+import org.apache.camel.component.aws.s3.S3Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,32 +80,64 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
 
     if (EnvironmentConfig.ONLY_DO_UPDATES) {
 
+      String baseS3Uri = "aws-s3://" + EnvironmentConfig.S3_BUCKET
+          + "?accessKey=" + EnvironmentConfig.S3_ACCESS_KEY
+          + "&secretKey=" + EnvironmentConfig.S3_SECRET_KEY;
+
       // Incremental updates:
       // Fetch /share/recap/data-dump/uat/NYPL/SCSBXml/Incremental/*.zip
       // Move successes to processedFiles, failures to errorFiles (local??)
       // For each zip, rename each enclosed xml file to an xml file with a randome uuid filename
       // Write updated zips to downloaded-updates/SCSBXML
-      from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
-          + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.ACCESSION_DIRECTORY
-          + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
-          + "&consumer.delay=60000&streamDownload=true&move="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).split(new ZipSplitter())
-              .streaming().process(new Processor() {
 
-                @Override
-                public void process(Exchange exchange) throws Exception {
-                  String fileName = (String) exchange.getIn().getHeader("CamelFileName");
-                  String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
-                  if (fileName.endsWith(".xml")) {
-                    logger.info("Downloading contents of zipFile for accession -  " + zipFileName);
-                    exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".xml");
-                    logger.info("Renaming file name original - " + fileName + " to changed: "
-                        + (String) exchange.getIn().getHeader("CamelFileName"));
-                  }
+      String remotePath = EnvironmentConfig.S3_BASE_LOCATION + "/" + EnvironmentConfig.ACCESSION_DIRECTORY;
+
+      from(baseS3Uri + "&prefix=" + remotePath)
+        .choice()
+
+        // When any file other than a .zip is found, just send to "processed":
+        .when(
+          not(header(S3Constants.KEY).endsWith(".zip"))
+        )
+          .to("direct:processedAccessions")
+        .otherwise()
+          .to("direct:processedAccessions")
+          .split(new ZipSplitter())
+            .streaming().process(new Processor() {
+
+              @Override
+              public void process(Exchange exchange) throws Exception {
+                String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+                logger.info("Considering file: " + fileName);
+                String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
+                if (fileName.endsWith(".xml")) {
+                  logger.info("Downloading contents of zipFile for accession -  " + zipFileName);
+                  exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".xml");
+                  logger.info("Renaming file name original - " + fileName + " to changed: "
+                      + (String) exchange.getIn().getHeader("CamelFileName"));
                 }
-              }).to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR).end();
+              }
+            })
+            .to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR)
+            .end();
 
+      // For each Incremental path processed, copy it to the .processed folder
+      from("direct:processedAccessions").process(new Processor() {
+          @Override
+          public void process(Exchange exchange) throws RecapHarvesterException {
+            //set relevant headers, copyObject needs these set to work properly
+            exchange.getIn().setHeader("CamelAwsS3BucketDestinationName", EnvironmentConfig.S3_BUCKET);
+
+            // Build new ".processed" path:
+            String originalKey = exchange.getIn().getHeader("CamelAwsS3Key", String.class);
+            String newKey = originalKey.replace(EnvironmentConfig.ACCESSION_DIRECTORY, EnvironmentConfig.ACCESSION_PROCESSED_DIRECTORY);
+            // String newKey = originalKey.substring(0, originalKey.length() - 1) + ".processed/";
+            exchange.getIn().setHeader("CamelAwsS3DestinationKey", newKey); 
+
+            logger.info("Upload " + newKey);
+          }
+        })
+          .to(baseS3Uri + "&operation=copyObject");
 
       // Loop over downloaded-updates/SCSBXML
       // .. Doing the same thing as above? (For each zip, renames enclosed xml to a random uuid xml filename?)
@@ -132,32 +167,56 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
               .split(body().tokenizeXML("bibRecord", "")).streaming()
               .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
 
-
       // Do deaccessions:
       // Fetch /share/recap/data-dump/uat/NYPL/Json/*.zip
       // Rename all included jsons in each zip with random uuids
       // Place updated zips in local directory: downloaded-updates/JSON
-      from("sftp://" + EnvironmentConfig.FTP_HOST + ":" + EnvironmentConfig.FTP_PORT
-          + EnvironmentConfig.FTP_BASE_LOCATION + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY
-          + "?privateKeyFile=" + EnvironmentConfig.FTP_PRIVATE_KEY_FILE_LOCATION + "&include=.*.zip"
-          + "&consumer.delay=60000&streamDownload=true&move="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY + "&moveFailed="
-          + EnvironmentConfig.FTP_COMPRESSED_FILES_ERROR_DIRECTORY).split(new ZipSplitter())
-              .streaming().process(new Processor() {
+      String deaccessionsRemotePath = EnvironmentConfig.S3_BASE_LOCATION + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY;
+      from(baseS3Uri + "&prefix=" + deaccessionsRemotePath + "&consumer.delay=60000")
+        .choice()
+        // When ends in .zip, download contents and send to "processed":
+        .when(
+          not(header(S3Constants.KEY).endsWith(".zip"))
+        )
+          .to("direct:processedDeaccessions")
+        .otherwise()
+          .to("direct:processedDeaccessions")
+          .split(new ZipSplitter())
+          .streaming().process(new Processor() {
 
-                @Override
-                public void process(Exchange exchange) throws Exception {
-                  String fileName = (String) exchange.getIn().getHeader("CamelFileName");
-                  String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
-                  if (fileName.endsWith(".json")) {
-                    logger
-                        .info("Downloading contents of zipFile for deaccession -  " + zipFileName);
-                    exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".json");
-                    logger.info("Renaming file name original - " + fileName + " to changed: "
-                        + (String) exchange.getIn().getHeader("CamelFileName"));
-                  }
-                }
-              }).to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR).end();
+            @Override
+            public void process(Exchange exchange) throws Exception {
+              String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+              String zipFileName = (String) exchange.getIn().getHeader("CamelFileNameOnly");
+              if (fileName.endsWith(".json")) {
+                logger
+                    .info("Downloading contents of zipFile for deaccession -  " + zipFileName);
+                exchange.getIn().setHeader("CamelFileName", UUID.randomUUID() + ".json");
+                logger.info("Renaming file name original - " + fileName + " to changed: "
+                    + (String) exchange.getIn().getHeader("CamelFileName"));
+              }
+            }
+          }).to("file:" + Constants.DOWNLOADED_UPDATES_DEACCESSION_DIR)
+          .end();
+
+      // For each Incremental path processed, copy it to the .processed folder
+      from("direct:processedDeaccessions").process(new Processor() {
+          @Override
+          public void process(Exchange exchange) throws RecapHarvesterException {
+            //set relevant headers, copyObject needs these set to work properly
+            exchange.getIn().setHeader("CamelAwsS3BucketDestinationName", EnvironmentConfig.S3_BUCKET);
+
+            // Build new ".processed" path:
+            String originalKey = exchange.getIn().getHeader("CamelAwsS3Key", String.class);
+            String newKey = originalKey.replace(EnvironmentConfig.DEACCESSION_DIRECTORY, EnvironmentConfig.DEACCESSION_PROCESSED_DIRECTORY);
+            // String newKey = originalKey.substring(0, originalKey.length() - 1) + ".processed/";
+            exchange.getIn().setHeader("CamelAwsS3DestinationKey", newKey); 
+
+            logger.info("Upload deaccessioned: " + newKey);
+          }
+        })
+          .to(baseS3Uri + "&operation=copyObject");
+
 
       // Loop over downloaded-updates/JSON
       // Appears to repeat work above of renaming the files in each zip with random uuids

@@ -20,58 +20,21 @@ of what this app does on the SFTP server and locally.
 
 ### Installing / Building Locally
 
-The following environment variables need to be set.
-Locally, this can be done in [an STS run configuration](https://stackoverflow.com/a/40482553).
+To compile and run all tests after modifying code:
 
 ```
-<!-- AWS credentials are only used for local development, in production, we use roles to allow the app to talk to kineses -->
-AWS_ACCESS_KEY_ID="USED-TO-POST-TO-KINESIS"
-AWS_SECRET_ACCESS_KEY="USED-TO-POST-TO-KINESIS"
-
-<! -- These don't need to be set locally. They're read by files in .ebextensions when deployed to download the SSH key used for SFTP -->
-S3_URL_TO_SSH_KEY=https://s3.amazonaws.com/a-bucket-name/private_key_name
-SSH_KEY_BUCKET_NAME=a-bucket-name
-
-NyplOAuthKey=[key-to-hit-platform-api]
-NyplOAuthSecret=[secret-to-hit-platform-api]
-NyplOAuthUrl=[https://fqdn/oauth/token]
-accessionDirectory=[remote-accession-directory-name]
-bibSchemaPath=[/current-schemas/BibPostRequest]
-itemSchemaPath="/current-schemas/ItemPostRequest"
-deaccessionDirectory=[remote-deaccession-directory-name]
-ftpBaseLocation=[remote/path/to/parent/of/accession/and/deaccession/dirs]
-ftpCompressedFilesFailedDirectory=[remote-directory-name-for-error-files-to-go]
-ftpCompressedFilesProcessedDirectory=[remote-directory-name-for-processed-files-to-go]
-ftpHostName="username@fqdn.com"
-ftpPort="2222"
-ftpPrivateKeyFileLocation="/full/path-to/sftp-servers/private-key"
-kinesisBibStream="BibPostRequest"
-kinesisItemStream="ItemPostRequest"
-onlyDoUpdates="true"
-platformAPIBasePath="https://API-DOMAIN.com/api/v0.1"
-LC_ALL="en_US.UTF-8"
+mvn clean package
 ```
 
 ### Running locally
 
-Create a copy of your `.env` (as, say, `.env-qa-export`) with all variables mentioned above, but where each variable is preceded with `export SET`, like:
-
-```
-export SET NyplOAuthKey=recap_harvester
-export SET NyplOAuthUrl=https://isso.nypl.org/oauth/token
-export SET accessionDirectory=SCSBXml/Incremental
-...
-```
-
-This allows you to `source` the file into your shell and run the app:
+See [.env-local-export.sample](.env-local-export.sample) for a sample config file you can use for running the app locally. To use it, copy `.env-local-export` to `.env-local` and fill in the missing values. This allows you to `source` the file into your shell and run the app:
 
 ```
 source .env-qa-export; mvn spring-boot:run
 ```
 
-### Deploying to Elastic Beanstalk
-
-TODO: fill this out as we figure it out.
+Note that above also auto-compiles any changes you've made, so there's no need to run `mvn clean package` before running the above.
 
 ## <a name="initial"></a> Development & Deployment Instructions for Initial Load
 
