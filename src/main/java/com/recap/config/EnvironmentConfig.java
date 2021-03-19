@@ -19,27 +19,26 @@ public final class EnvironmentConfig {
   public static final Boolean ONLY_DO_UPDATES =
       Boolean.valueOf(System.getenv(EnvironmentVariableNames.ONLY_DO_UPDATES).toLowerCase().trim());
 
-  public static final String FTP_HOST = System.getenv(EnvironmentVariableNames.FTP_HOST);
+  public static final String S3_BUCKET = System.getenv(EnvironmentVariableNames.S3_BUCKET);
 
-  public static final String FTP_PORT = System.getenv(EnvironmentVariableNames.FTP_PORT);
+  public static final String S3_ACCESS_KEY = System.getenv(EnvironmentVariableNames.S3_ACCESS_KEY);
 
-  public static final String FTP_BASE_LOCATION =
-      System.getenv(EnvironmentVariableNames.FTP_BASE_LOCATION);
+  public static final String S3_SECRET_KEY = System.getenv(EnvironmentVariableNames.S3_SECRET_KEY);
 
-  public static final String FTP_PRIVATE_KEY_FILE_LOCATION =
-      System.getenv(EnvironmentVariableNames.FTP_PRIVATE_KEY_FILE_LOCATION);
-
-  public static final String FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY =
-      System.getenv(EnvironmentVariableNames.FTP_COMPRESSED_FILES_PROCESSED_DIRECTORY);
-
-  public static final String FTP_COMPRESSED_FILES_ERROR_DIRECTORY =
-      System.getenv(EnvironmentVariableNames.FTP_COMPRESSED_FILES_ERROR_DIRECTORY);
+  public static final String S3_BASE_LOCATION =
+      System.getenv(EnvironmentVariableNames.S3_BASE_LOCATION);
 
   public static final String ACCESSION_DIRECTORY =
       System.getenv(EnvironmentVariableNames.ACCESSION_DIRECTORY);
 
+  public static final String ACCESSION_PROCESSED_DIRECTORY =
+      System.getenv(EnvironmentVariableNames.ACCESSION_PROCESSED_DIRECTORY);
+
   public static final String DEACCESSION_DIRECTORY =
       System.getenv(EnvironmentVariableNames.DEACCESSION_DIRECTORY);
+
+  public static final String DEACCESSION_PROCESSED_DIRECTORY =
+      System.getenv(EnvironmentVariableNames.DEACCESSION_PROCESSED_DIRECTORY);
 
   public static final String PLATFORM_BASE_API_PATH =
       System.getenv(EnvironmentVariableNames.PLATFORM_BASE_API_PATH);

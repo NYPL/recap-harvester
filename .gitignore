@@ -32,3 +32,6 @@ nbdist/
 # HTC Generated Files for processing
 downloaded-updates/JSON/*.json
 downloaded-updates/SCSBXML/*.xml
+
+.env
+.env-local-export
