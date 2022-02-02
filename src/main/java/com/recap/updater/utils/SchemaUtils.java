@@ -76,6 +76,7 @@ public class SchemaUtils {
       }
 
       logger.info("schema api response code - " + responseCode);
+      // only log id and schemaobject name
       logger.info("schema api response body - " + apiResponse);
 
       Map<String, Object> responseDeserialized =
