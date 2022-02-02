@@ -33,5 +33,8 @@ nbdist/
 downloaded-updates/JSON/*.json
 downloaded-updates/SCSBXML/*.xml
 
+# Exclude .env files generally:
 .env
-.env-local-export
+.env-*
+# Allow the .env sample file
+!.env-local-export.sample
