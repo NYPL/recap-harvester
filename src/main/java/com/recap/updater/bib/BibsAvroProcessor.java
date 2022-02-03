@@ -47,14 +47,16 @@ public class BibsAvroProcessor implements Processor {
       if (body != null && body.getClass() != DefaultMessage.class) {
         List<Bib> bibs = exchange.getIn().getBody(List.class);
         List<byte[]> avroBibs = new ArrayList<>();
+        String bibIds = "";
         for (Bib bib : bibs) {
-          System.out.println(new ObjectMapper().writeValueAsString(bib));
+          bibIds += bib.getId() + ", ";
           Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
           AvroSchema avroSchema = new AvroSchema(schema);
           AvroMapper avroMapper = new AvroMapper();
           byte[] avroBib = avroMapper.writer(avroSchema).writeValueAsBytes(bib);
           avroBibs.add(avroBib);
         }
+        logger.info("Avro processed for bibs with ids: " + bibIds);
         exchange.getIn().setBody(avroBibs);
       }
     } catch (JsonProcessingException jsonProcessingException) {

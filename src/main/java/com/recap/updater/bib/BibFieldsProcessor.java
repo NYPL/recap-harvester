@@ -341,7 +341,7 @@ public class BibFieldsProcessor {
       languageKeysAndVals.put(BibConstants.VALUE, langCodeAndName.get(BibConstants.CODE));
       languageKeysAndVals.put(BibConstants.DISPLAY, langCodeAndName.get(BibConstants.NAME));
     } catch (NullPointerException nullPointerException) {
-      logger.error("FATAL-low - Unable to get language code from - " + " for " + bib.getNyplType()
+      logger.warn("Unable to get language code from - " + " for " + bib.getNyplType()
           + " - " + bib.getId() + ", " + "source - " + bib.getNyplSource());
       return null;
     }

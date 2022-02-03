@@ -76,12 +76,15 @@ public class SchemaUtils {
       }
 
       logger.info("schema api response code - " + responseCode);
-      logger.info("schema api response body - " + apiResponse);
 
       Map<String, Object> responseDeserialized =
           new ObjectMapper().readValue(apiResponse, Map.class);
       Map<String, Object> schemaData =
           (Map<String, Object>) responseDeserialized.get(Constants.SCHEMA_DATA);
+      Map<String, String> schemaObject = 
+          (Map<String, String>) schemaData.get("schemaObject");
+      String schemaName = (String) schemaObject.get("name");
+      logger.info("Successful schema api response for schema: " + schemaName);
       return (String) schemaData.get(Constants.SCHEMA_DATA_SCHEMA);
     } catch (Exception e) {
       logger.error("Error occurred while processing camel exchange to get schema response - ", e);
