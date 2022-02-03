@@ -56,7 +56,7 @@ public class BibsAvroProcessor implements Processor {
           byte[] avroBib = avroMapper.writer(avroSchema).writeValueAsBytes(bib);
           avroBibs.add(avroBib);
         }
-        logger.info("Avro processed for bibs with ids: " + bibIds)
+        logger.info("Avro processed for bibs with ids: " + bibIds);
         exchange.getIn().setBody(avroBibs);
       }
     } catch (JsonProcessingException jsonProcessingException) {
