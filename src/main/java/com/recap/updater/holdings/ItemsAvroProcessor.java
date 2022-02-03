@@ -49,12 +49,14 @@ public class ItemsAvroProcessor implements Processor {
         Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
         AvroSchema avroSchema = new AvroSchema(schema);
         AvroMapper avroMapper = new AvroMapper();
+        String itemIds = "";
         for (Item item : items) {
-          System.out.println(new ObjectMapper().writeValueAsString(item));
+          itemIds += item.getId() + ", ";
           byte[] avroItem = avroMapper.writer(avroSchema).writeValueAsBytes(item);
           avroItems.add(avroItem);
         }
         exchange.getIn().setBody(avroItems);
+        logger.info("Avro processed for items with ids: " + itemIds);
       }
     } catch (JsonProcessingException jsonProcessingException) {
       logger.error("Error occurred while doing avro processing for item - ",

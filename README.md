@@ -12,6 +12,15 @@ To install Maven on OSX using [Homebrew](https://brew.sh/):
 brew install mvn
 ```
 
+You probably need to be running Java8 (as reported by `java -version`). To enable Java8 on OSX:
+
+ * `brew install openjdk@8`
+ * `echo 'export PATH="/usr/local/opt/openjdk@8/bin:$PATH"' >> ~/.zshrc`
+ * `source ~/.zshrc`
+ * `java -version` should report something like "openjdk version "1.8.0_312"
+
+(Note, the above will link `java` to v1.8 for all other processes on your machine until you remove the added line from `~/.zshrc`.)
+
 To compile and run all tests after modifying code:
 
 ```
@@ -47,10 +56,16 @@ The app connects to an S3 bucket (formerly an SFTP server) managed by SCSB to re
 
 #### Running the app in "Nightly Updates" mode locally
 
-See [.env-local-export.sample](.env-local-export.sample) for a sample config file you can use for running the app locally. To use it, copy `.env-local-export.sample` to `.env-local-export` and fill in the missing values. This allows you to `source` the file into your shell and run the app:
+First, ensure `mvn` is using Java8. (See instructions [in Setup](#setup) about installing & enabling Java8.) If `mvn -v` reports "Java version" other than 1.8 (e.g. "Java version: 17.0.2"), you may need to set `JAVA_HOME` when running `mvn`. Instructions follow.
 
+You'll also need to set up a local env file. See [.env-local-export.sample](.env-local-export.sample) for a sample config file you can use for running the app locally. To use it, copy `.env-local-export.sample` to `.env-local-export` and fill in the missing values. This allows you to `source` the file into your shell and run the app:
 ```
 source .env-local-export; mvn spring-boot:run
+```
+
+If you encounter a build/application error and/or `mvn -v` reports it's linked to a java other than 1.8, prefix the `mvn` command to specify your Java8 home:
+```
+source .env-local-export -export; JAVA_HOME=/usr/local/opt/openjdk@8 mvn spring-boot:run
 ```
 
 Note that `mvn spring-boot:run` also auto-compiles any changes you've made, so there's no need to run `mvn clean package` before running the above.
