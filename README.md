@@ -124,7 +124,7 @@ This repo uses the [Main-QA-Production Git Workflow](https://github.com/NYPL/eng
 
 You can test code/environment changes in QA by moving a previously processed update zip from the "processed" path back into the to-process path, as follows:
 
-1. Select a file from `aws s3 ls --profile scsb-uat s3://scsb-uat/data-exports/NYPL/SCSBXml/Incremental.processed/`
+1. Select a file from `aws s3 ls --profile scsb-uat s3://scsb-uat/data-exports/NYPL/SCSBXml/Incremental.processed/` (Or use ./sample-input/\*.zip)
 2. Move the file into the to-process path, e.g. `aws s3 mv --profile scsb-uat s3://scsb-uat/data-exports/NYPL/SCSBXml/Incremental.processed/PUL-CUL_20210108_001700.zip s3://scsb-uat/data-exports/NYPL/SCSBXml/Incremental-test/`
 3. Configure the app to read from that S3 path (i.e. add `export SET accessionDirectory=SCSBXml/Incremental-test/` to `.env-local-export`)
 4. Run the app: `source .env-local-export; mvn spring-boot:run`
