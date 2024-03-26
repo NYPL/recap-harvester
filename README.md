@@ -54,6 +54,18 @@ The app connects to an S3 bucket (formerly an SFTP server) managed by SCSB to re
    * Iterate over the json files, translate them into Bib and Item documents with `"deleted": true`
    * Broadcast the "deleted" documents over `BibPostRequest-[env]` and `ItemPostRequest-[env]` Kinesis streams (Avro encoded using namesake schemas)
 
+#### Alarm
+
+The app is monitored by a [CW alarm](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#alarmsV2:alarm/RecapHarvesterNotProcessingBibs-production). The alarm is configured to fire when the [RecapHarvesterBibProcessed-Production CW metric](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#metricsV2?graph=~(metrics~(~(~'LogMetrics~'RecapHarvesterBibProcessed-Production))~view~'timeSeries~stacked~false~region~'us-east-1~start~'-PT168H~end~'P0D~stat~'Sum~period~86400)&query=~'*7bLogMetrics*7d*20RecapHarvesterBibProcessed*20MetricName*3d*22RecapHarvesterBibProcessed-Production*22) <= 0 for 1 day. That metric is a proxy for [a custome metric filter](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Faws$252Felasticbeanstalk$252Fnightly-recap-harvester-production$252Fvar$252Fapp$252Fcurrent$252Frecap-harvester$252Frecap-logging.log$23metric-filters
+) defined on the recap-harvester logs looking for the phrase "Processing bib - recap-" in the logs. In summary:
+ - the app [logs out](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Faws$252Felasticbeanstalk$252Fnightly-recap-harvester-production$252Fvar$252Fapp$252Fcurrent$252Frecap-harvester$252Frecap-logging.log/log-events$3FfilterPattern$3D$2522Processing+bib+-+recap-$2522$26start$3D-172800000) "Processing bib - recap-"
+ - a [metric filter](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Faws$252Felasticbeanstalk$252Fnightly-recap-harvester-production$252Fvar$252Fapp$252Fcurrent$252Frecap-harvester$252Frecap-logging.log$23metric-filters) turns that into [a metric](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#metricsV2?graph=~(metrics~(~(~'LogMetrics~'RecapHarvesterBibProcessed-Production))~view~'timeSeries~stacked~false~region~'us-east-1~start~'-PT168H~end~'P0D~stat~'Sum~period~86400)&query=~'*7bLogMetrics*7d*20RecapHarvesterBibProcessed*20MetricName*3d*22RecapHarvesterBibProcessed-Production*22)
+ - an [alarm](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#alarmsV2:alarm/RecapHarvesterNotProcessingBibs-production) fires when the metric isn't written to for 1 day.
+
+The alarm fires a lot due to:
+ - SCSB drops the incrementals at slightly different times. The recap-harvester process them immediately after. If the app processes the morning batch at 9:30 UTC on one day and 11:00 UTC on the next day, the alarm will fire at 9:30 UTC on the second day. It will return to OK shortly after 11:00 UTC when it starts seeing new writes. We are not able to increase the period to, say 26 hours because "Metrics cannot be checked across more than a day (EvaluationPeriods * Period must be <= 86400)"
+ - Sometimes there are legitimately no updates from SCSB for a day or two - particularly on the weekend.
+
 #### Running the app in "Nightly Updates" mode locally
 
 First, ensure `mvn` is using Java8. (See instructions [in Setup](#setup) about installing & enabling Java8.) If `mvn -v` reports "Java version" other than 1.8 (e.g. "Java version: 17.0.2"), you may need to set `JAVA_HOME` when running `mvn`. Instructions follow.
