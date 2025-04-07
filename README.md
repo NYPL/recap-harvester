@@ -1,6 +1,6 @@
 # ReCAP Harvester
 
-This application is a poller in the Data/Search pipeline of NYPL's Library Services Platform. It polls an S3 bucket (formerly an SFTP server) managed by SCSB for additions, updates, and deletions of partner records. It processes SCSBXML and json files and broadcasts Bib and Item documents into the `BibPostRequest-[env]` and `ItemPostRequest-[env]` streams just as our [Sierra Retriever](https://github.com/NYPL-discovery/sierra-retriever/) does for our own records. This app is represented by the "RecapHarvester" component in our [Data/Search Architecture diagram](https://docs.google.com/presentation/d/1kPUhT-JPOuniXndKWc_JEp2EY5rOPuH5ebSqYCe_438/edit#slide=id.g401dec0f26_0_128).
+This application is a poller in the Data/Search pipeline of NYPL's Library Services Platform. It polls an S3 bucket (formerly an SFTP server) managed by SCSB for additions, updates, and deletions of partner records. It processes SCSBXML and json files and writes [BibPostRequest](https://platform.nypl.org/api/v0.1/current-schemas/BibPostRequest) and [ItemPostRequest](https://platform.nypl.org/api/v0.1/current-schemas/ItemPostRequest) documents into the `BibPostRequest-[env]` and `ItemPostRequest-[env]` streams just as our [SierraUpdatePoller](https://github.com/NYPL/sierraUpdatePollerV2) does for our own records. This app is represented by the "RecapHarvester" component in our [Data/Search Architecture diagram](https://docs.google.com/presentation/d/1kPUhT-JPOuniXndKWc_JEp2EY5rOPuH5ebSqYCe_438/edit?usp=sharing).
 
 ## Setup
 
