@@ -23,6 +23,7 @@ public class OAuth2Client {
     this.grantType = grantType;
   }
 
+
   public OAuth2ProtectedResourceDetails getClientCredentialsResourceDetails() {
     ClientCredentialsResourceDetails resource = new ClientCredentialsResourceDetails();
     resource.setAccessTokenUri(accessTokenUri);

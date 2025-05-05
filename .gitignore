@@ -38,3 +38,7 @@ downloaded-updates/SCSBXML/*.xml
 .env-*
 # Allow the .env sample file
 !.env-local-export.sample
+.mvn/.develocity/
+
+.gradle/
+.env-local-export

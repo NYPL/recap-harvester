@@ -39,7 +39,7 @@ public class BaseConfig {
   public DataFormat getBibRecordJaxbDataFormat() throws RecapHarvesterException {
     try {
       JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
-      DataFormat jaxbDataFormat = new JaxbDataFormat(jaxbContext);
+      DataFormat jaxbDataFormat = new JaxbDataFormat(String.valueOf(jaxbContext));
       logger.info("Set Dataformat to extract xml data based on xml element configured");
       return jaxbDataFormat;
     } catch (JAXBException jaxbException) {
