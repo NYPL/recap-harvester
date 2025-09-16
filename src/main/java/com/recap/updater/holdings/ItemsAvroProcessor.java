@@ -8,9 +8,11 @@ import org.apache.avro.Schema;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.impl.event.CamelContextStartedEvent;
 import org.apache.camel.support.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
 import org.springframework.retry.support.RetryTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,13 +30,23 @@ public class ItemsAvroProcessor implements Processor {
   private static Logger logger = LoggerFactory.getLogger(ItemsAvroProcessor.class);
 
   private String schemaJson;
+  private NYPLSchema schema;
+  private RetryTemplate retryTemplate;
+  private ProducerTemplate producerTemplate;
 
   public ItemsAvroProcessor(NYPLSchema schema, RetryTemplate retryTemplate,
       ProducerTemplate producerTemplate) throws RecapHarvesterException {
-    if (schema.getItemSchemaJson() == null)
-      schema.setItemSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate,
-          EnvironmentConfig.ITEM_SCHEMA_API));
-    this.schemaJson = schema.getItemSchemaJson();
+    this.schema = schema;
+    this.retryTemplate = retryTemplate;
+    this.producerTemplate = producerTemplate;
+  }
+
+  @EventListener(CamelContextStartedEvent.class)
+  public void initializeSchema() throws RecapHarvesterException {
+      if (schema.getItemSchemaJson() == null) {
+        schema.setBibSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate, EnvironmentConfig.ITEM_SCHEMA_API));
+      }
+      schemaJson = schema.getItemSchemaJson();
   }
 
   @Override

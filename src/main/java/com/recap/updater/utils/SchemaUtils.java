@@ -57,7 +57,7 @@ public class SchemaUtils {
       String api) throws RecapHarvesterException {
     try {
       Exchange exchange = getExchangeWithAPIResponse(retryTemplate, producerTemplate, api);
-      Message out = exchange.getOut();
+      Message out = exchange.getMessage();
 
       HttpOperationFailedException httpOperationFailedException =
           exchange.getException(HttpOperationFailedException.class);

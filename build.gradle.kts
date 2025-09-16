@@ -35,7 +35,9 @@ dependencies {
     implementation(libs.com.google.guava.guava)
     implementation(libs.org.springframework.retry.spring.retry)
     implementation(libs.javax.xml.bind.jaxb.api)
-    runtimeOnly("org.glassfish.jaxb:jaxb-runtime:2.3.1")
+    implementation(libs.jaxb.legacy.api)
+    implementation(libs.jaxb.legacy.impl)
+
     testImplementation(libs.org.springframework.boot.spring.boot.starter.test)
     testImplementation(libs.com.github.stefanbirkner.system.rules)
 }

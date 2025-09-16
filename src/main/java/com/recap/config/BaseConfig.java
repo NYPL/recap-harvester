@@ -39,11 +39,12 @@ public class BaseConfig {
   @Bean
   public DataFormat getBibRecordJaxbDataFormat() throws RecapHarvesterException {
     try {
-      JAXBContext jaxbContext = JAXBContext.newInstance(BibRecord.class);
-      DataFormat jaxbDataFormat = new JaxbDataFormat(String.valueOf(jaxbContext));
+        String contextPath = BibRecord.class.getPackage().getName();
+        JaxbDataFormat jaxbDataFormat = new JaxbDataFormat();
+        jaxbDataFormat.setContextPath(contextPath);
       logger.info("Set Dataformat to extract xml data based on xml element configured");
       return jaxbDataFormat;
-    } catch (JAXBException jaxbException) {
+    } catch (Exception jaxbException) {
       logger.error("XML file processing Error - JAXBException occurred - ", jaxbException);
       throw new RecapHarvesterException(
           "Hit a JAXBException during bean configuration " + jaxbException.getMessage());

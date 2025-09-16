@@ -1,6 +1,8 @@
 package com.recap.processor;
 
 import java.io.File;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -85,7 +87,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
     if (EnvironmentConfig.ONLY_DO_UPDATES) {
 
       // Establish base URI for S3 endpoints
-      String baseS3Uri = "aws-s3://" + EnvironmentConfig.S3_BUCKET
+      String baseS3Uri = "aws2-s3://" + EnvironmentConfig.S3_BUCKET
           + "?accessKey=" + EnvironmentConfig.S3_ACCESS_KEY
           + "&secretKey=" + EnvironmentConfig.S3_SECRET_KEY;
 
@@ -184,7 +186,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
        */
 
       String deaccessionsRemotePath = EnvironmentConfig.S3_BASE_LOCATION + "/" + EnvironmentConfig.DEACCESSION_DIRECTORY;
-      from(baseS3Uri + "&prefix=" + deaccessionsRemotePath + "&consumer.delay=60000")
+      from(baseS3Uri + "&prefix=" + deaccessionsRemotePath + "&delay=60000")
         .choice()
         // When ends in .zip, download contents and send to "processed":
         .when(
