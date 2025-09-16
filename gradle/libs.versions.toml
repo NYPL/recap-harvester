@@ -7,18 +7,10 @@ com-fasterxml-jackson-dataformat-jackson-dataformat-avro = "2.8.5"
 com-github-stefanbirkner-system-rules = "1.16.0"
 com-google-guava-guava = "33.4.8-jre"
 commons-io-commons-io = "2.14.0"
-javax-xml-bind-jaxb-api = "2.1"
-org-apache-camel-camel-aws = "2.25.4"
-org-apache-camel-camel-ftp = "4.11.0"
-org-apache-camel = "3.21.0"
-org-apache-camel-camel-jaxb = "4.11.0"
-org-apache-camel-camel-spring-boot-starter = "2.18.0"
-org-apache-camel-camel-test = "2.18.2"
-org-apache-camel-camel-zipfile = "2.18.1"
+javax-xml-bind-jaxb-api = "2.3.1"
+org-apache-camel-bom = "4.13.0"
+org-apache-camel-camel-jaxb = "4.13.0"
 org-mockito-mockito-core = "1.10.19"
-org-springframework-boot-spring-boot-starter = "1.4.1.RELEASE"
-org-springframework-boot-spring-boot-starter-test = "1.4.1.RELEASE"
-org-springframework-boot-spring-boot-starter-web = "1.4.1.RELEASE"
 org-springframework-retry-spring-retry = "1.1.4.RELEASE"
 org-springframework-security-oauth-spring-security-oauth2 = "2.5.2.RELEASE"
 
@@ -29,13 +21,16 @@ com-github-stefanbirkner-system-rules = { module = "com.github.stefanbirkner:sys
 com-google-guava-guava = { module = "com.google.guava:guava", version.ref = "com-google-guava-guava" }
 commons-io-commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-commons-io" }
 javax-xml-bind-jaxb-api = { module = "javax.xml.bind:jaxb-api", version.ref = "javax-xml-bind-jaxb-api" }
-org-apache-camel-camel-aws = { module = "org.apache.camel:camel-aws", version.ref = "org-apache-camel-camel-aws" }
-org-apache-camel-camel-ftp = { module = "org.apache.camel:camel-ftp", version.ref = "org-apache-camel-camel-ftp" }
-org-apache-camel-camel-http = { module = "org.apache.camel:camel-http", version.ref = "org-apache-camel" }
-org-apache-camel-camel-jaxb = { module = "org.apache.camel:camel-jaxb", version.ref = "org-apache-camel-camel-jaxb" }
+org-apache-camel-bom = { group = "org.apache.camel", name = "camel-bom", version.ref = "org-apache-camel-bom" }
+org-apache-camel-camel-aws-kinesis = { module = "org.apache.camel:camel-aws2-kinesis" }
+org-apache-camel-camel-aws-s3 = { module = "org.apache.camel:camel-aws2-s3" }
+org-apache-camel-camel-core = { module = "org.apache.camel:camel-core" }
+org-apache-camel-camel-ftp = { module = "org.apache.camel:camel-ftp" }
+org-apache-camel-camel-http = { module = "org.apache.camel:camel-http"}
+org-apache-camel-camel-jaxb = { module = "org.apache.camel:camel-jaxb" }
 org-apache-camel-camel-spring-boot-starter = { module = "org.apache.camel.springboot:camel-spring-boot-starter", version.ref = "org-apache-camel-camel-jaxb" }
-org-apache-camel-camel-test = { module = "org.apache.camel:camel-test", version.ref = "org-apache-camel" }
-org-apache-camel-camel-zipfile = { module = "org.apache.camel:camel-zipfile", version.ref = "org-apache-camel" }
+org-apache-camel-camel-test = { module = "org.apache.camel:camel-test-junit5" }
+org-apache-camel-camel-zipfile = { module = "org.apache.camel:camel-zipfile" }
 org-mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "org-mockito-mockito-core" }
 org-springframework-boot-spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter"}
 org-springframework-boot-spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test"}

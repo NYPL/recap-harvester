@@ -1,24 +1,23 @@
 package com.recap.stream;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.impl.DefaultMessage;
+import org.apache.camel.support.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.services.kinesis.model.PutRecordsRequest;
-import com.amazonaws.services.kinesis.model.PutRecordsRequestEntry;
-import com.amazonaws.services.kinesis.model.PutRecordsResult;
-import com.amazonaws.services.kinesis.model.PutRecordsResultEntry;
 import com.google.common.collect.Lists;
 import com.recap.config.BaseConfig;
-import com.recap.config.EnvironmentConfig;
 import com.recap.constants.Constants;
 import com.recap.exceptions.RecapHarvesterException;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsResultEntry;
 
 public class KinesisProcessor implements Processor {
 
@@ -59,7 +58,7 @@ public class KinesisProcessor implements Processor {
       List<PutRecordsRequestEntry> listPutRecordsRequestEntry = new ArrayList<>();
       PutRecordsRequest putRecordsRequest =
           createPutRecordsRequest(listPutRecordsRequestEntry, avroRecords);
-      PutRecordsResult putRecordsResult =
+      PutRecordsResponse putRecordsResult =
           getPutRecordsResultAfterPostingToKinesis(putRecordsRequest);
 
       validateResponse(putRecordsResult, listPutRecordsRequestEntry, putRecordsRequest);
@@ -74,16 +73,16 @@ public class KinesisProcessor implements Processor {
       List<PutRecordsRequestEntry> listPutRecordsRequestEntry, List<byte[]> avroRecords)
       throws RecapHarvesterException {
     try {
-      PutRecordsRequest putRecordsRequest = new PutRecordsRequest();
-      putRecordsRequest.setStreamName(streamName);
+      PutRecordsRequest.Builder putRecordsRequest = PutRecordsRequest.builder();
+      putRecordsRequest.streamName(streamName);
       for (byte[] avroRecord : avroRecords) {
-        PutRecordsRequestEntry putRecordsRequestEntry = new PutRecordsRequestEntry();
-        putRecordsRequestEntry.setData(ByteBuffer.wrap(avroRecord));
-        putRecordsRequestEntry.setPartitionKey(Long.toString(System.currentTimeMillis()));
-        listPutRecordsRequestEntry.add(putRecordsRequestEntry);
+        PutRecordsRequestEntry.Builder putRecordsRequestEntry = PutRecordsRequestEntry.builder();
+        putRecordsRequestEntry.data(SdkBytes.fromByteArray(avroRecord));
+        putRecordsRequestEntry.partitionKey(Long.toString(System.currentTimeMillis()));
+        listPutRecordsRequestEntry.add(putRecordsRequestEntry.build());
       }
-      putRecordsRequest.setRecords(listPutRecordsRequestEntry);
-      return putRecordsRequest;
+      putRecordsRequest.records(listPutRecordsRequestEntry);
+      return putRecordsRequest.build();
     } catch (Exception e) {
       logger.error("Error occurred while creating PutRecordsRequest - " + e.getMessage());
       throw new RecapHarvesterException(
@@ -91,7 +90,7 @@ public class KinesisProcessor implements Processor {
     }
   }
 
-  public PutRecordsResult getPutRecordsResultAfterPostingToKinesis(
+  public PutRecordsResponse getPutRecordsResultAfterPostingToKinesis(
       PutRecordsRequest putRecordsRequest) throws RecapHarvesterException {
     try {
       return baseConfig.getAmazonKinesisClient().putRecords(putRecordsRequest);
@@ -104,15 +103,15 @@ public class KinesisProcessor implements Processor {
     }
   }
 
-  public void validateResponse(PutRecordsResult putRecordsResult,
+  public void validateResponse(PutRecordsResponse putRecordsResult,
       List<PutRecordsRequestEntry> listPutRecordsRequestEntry, PutRecordsRequest putRecordsRequest)
       throws RecapHarvesterException {
     try {
-      if (!(putRecordsResult.getFailedRecordCount() > 0))
+      if (!(putRecordsResult.failedRecordCount() > 0))
         return;
       else {
         logger.info("Got some records didn't make it into kinesis - "
-            + putRecordsResult.getFailedRecordCount() + " - is the failed record count");
+            + putRecordsResult.failedRecordCount() + " - is the failed record count");
         resendFailedRecordsToKinesis(putRecordsResult, listPutRecordsRequestEntry,
             putRecordsRequest);
       }
@@ -126,21 +125,21 @@ public class KinesisProcessor implements Processor {
     }
   }
 
-  public void resendFailedRecordsToKinesis(PutRecordsResult putRecordsResult,
+  public void resendFailedRecordsToKinesis(PutRecordsResponse putRecordsResult,
       List<PutRecordsRequestEntry> listPutRecordsRequestEntry, PutRecordsRequest putRecordsRequest)
       throws RecapHarvesterException {
     try {
       final List<PutRecordsRequestEntry> failedRecordsList = new ArrayList<>();
-      final List<PutRecordsResultEntry> listPutRecordsResultEntry = putRecordsResult.getRecords();
+      final List<PutRecordsResultEntry> listPutRecordsResultEntry = putRecordsResult.records();
       for (int i = 0; i < listPutRecordsResultEntry.size(); i++) {
         final PutRecordsRequestEntry putRecordsRequestEntry = listPutRecordsRequestEntry.get(i);
         final PutRecordsResultEntry putRecordsResultEntry = listPutRecordsResultEntry.get(i);
-        if (putRecordsResultEntry.getErrorCode() != null) {
+        if (putRecordsResultEntry.errorCode() != null) {
           failedRecordsList.add(putRecordsRequestEntry);
         }
       }
       listPutRecordsRequestEntry = failedRecordsList;
-      putRecordsRequest.setRecords(listPutRecordsRequestEntry);
+      putRecordsRequest = putRecordsRequest.toBuilder().records(listPutRecordsRequestEntry).build();
       putRecordsResult = getPutRecordsResultAfterPostingToKinesis(putRecordsRequest);
       validateResponse(putRecordsResult, listPutRecordsRequestEntry, putRecordsRequest);
     } catch (Exception e) {

@@ -42,3 +42,5 @@ downloaded-updates/SCSBXML/*.xml
 
 .gradle/
 .env-local-export
+
+**/.DS_Store

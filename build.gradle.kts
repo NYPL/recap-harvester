@@ -14,6 +14,8 @@ repositories {
 }
 
 dependencies {
+    val camelBom = platform(libs.org.apache.camel.bom)
+    implementation(camelBom)
     implementation(libs.org.springframework.boot.spring.boot.starter)
     implementation(libs.org.apache.camel.camel.spring.boot.starter)
     implementation(libs.org.apache.camel.camel.jaxb)
@@ -23,7 +25,9 @@ dependencies {
     implementation(libs.com.fasterxml.jackson.core.jackson.databind)
     implementation(libs.org.springframework.boot.spring.boot.starter.web)
     implementation(libs.org.springframework.security.oauth.spring.security.oauth2)
-    implementation(libs.org.apache.camel.camel.aws)
+    implementation(libs.org.apache.camel.camel.aws.kinesis)
+    implementation(libs.org.apache.camel.camel.aws.s3)
+    implementation(libs.org.apache.camel.camel.core)
     implementation(libs.org.apache.camel.camel.http)
     implementation(libs.org.apache.camel.camel.test)
     implementation(libs.com.fasterxml.jackson.dataformat.jackson.dataformat.avro)
@@ -31,6 +35,7 @@ dependencies {
     implementation(libs.com.google.guava.guava)
     implementation(libs.org.springframework.retry.spring.retry)
     implementation(libs.javax.xml.bind.jaxb.api)
+    runtimeOnly("org.glassfish.jaxb:jaxb-runtime:2.3.1")
     testImplementation(libs.org.springframework.boot.spring.boot.starter.test)
     testImplementation(libs.com.github.stefanbirkner.system.rules)
 }
@@ -53,4 +58,8 @@ tasks.withType<JavaCompile>() {
 
 tasks.withType<Javadoc>() {
     options.encoding = "UTF-8"
+}
+
+tasks.withType<Test> {
+    jvmArgs("--add-opens=java.base/java.lang=ALL-UNNAMED")
 }

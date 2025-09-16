@@ -14,9 +14,10 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import static org.apache.camel.builder.PredicateBuilder.not;
 import static org.apache.camel.builder.PredicateBuilder.and;
+
+import org.apache.camel.component.aws2.s3.AWS2S3Constants;
 import org.apache.camel.dataformat.zipfile.ZipSplitter;
 import org.apache.camel.model.dataformat.ZipFileDataFormat;
-import org.apache.camel.component.aws.s3.S3Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import com.recap.updater.holdings.ItemsAvroProcessor;
 import com.recap.updater.holdings.ItemsProcessor;
 import com.recap.updater.utils.NYPLSchema;
 import com.recap.xml.models.BibRecord;
+import software.amazon.awssdk.services.s3.S3Configuration;
 
 @Component
 public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
@@ -104,7 +106,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
 
         // When any file other than a .zip is found, just send to "processed":
         .when(
-          not(header(S3Constants.KEY).endsWith(".zip"))
+          not(header(AWS2S3Constants.KEY).endsWith(".zip"))
         )
           .to("direct:processedAccessions")
         .otherwise()
@@ -186,7 +188,7 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
         .choice()
         // When ends in .zip, download contents and send to "processed":
         .when(
-          not(header(S3Constants.KEY).endsWith(".zip"))
+          not(header(AWS2S3Constants.KEY).endsWith(".zip"))
         )
           .to("direct:processedDeaccessions")
         .otherwise()

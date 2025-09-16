@@ -19,12 +19,13 @@ import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
-import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.recap.exceptions.RecapHarvesterException;
 import com.recap.xml.models.BibRecord;
+import software.amazon.awssdk.services.kinesis.KinesisClient;
+import software.amazon.awssdk.services.kinesis.KinesisClientBuilder;
 
 @Configuration
 @PropertySource("classpath:application.properties")
@@ -78,9 +79,8 @@ public class BaseConfig {
   }
 
   @Bean
-  public AmazonKinesisClient getAmazonKinesisClient() {
-    AmazonKinesisClient amazonKinesisClient = new AmazonKinesisClient();
-
+  public KinesisClient getAmazonKinesisClient() {
+    KinesisClient amazonKinesisClient = KinesisClient.builder().build();
     logger.info("Configured Kinesis Client");
 
     return amazonKinesisClient;

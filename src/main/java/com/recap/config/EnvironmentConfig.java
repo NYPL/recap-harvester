@@ -17,7 +17,7 @@ public final class EnvironmentConfig {
           + System.getenv(EnvironmentVariableNames.ITEM_SCHEMA_PATH);
 
   public static final Boolean ONLY_DO_UPDATES =
-      Boolean.valueOf(System.getenv(EnvironmentVariableNames.ONLY_DO_UPDATES).toLowerCase().trim());
+      Boolean.valueOf(System.getenv(EnvironmentVariableNames.ONLY_DO_UPDATES));
 
   public static final String S3_BUCKET = System.getenv(EnvironmentVariableNames.S3_BUCKET);
 
