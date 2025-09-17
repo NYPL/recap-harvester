@@ -4,7 +4,6 @@
 
 plugins {
     java
-    `maven-publish`
     id("org.springframework.boot") version "3.4.5"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -47,12 +46,6 @@ group = "com.recap"
 version = "0.0.1-SNAPSHOT"
 description = "harvester"
 java.sourceCompatibility = JavaVersion.VERSION_17
-
-publishing {
-    publications.create<MavenPublication>("maven") {
-        from(components["java"])
-    }
-}
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
