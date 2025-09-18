@@ -5,7 +5,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.util.List;
 
-@XmlRootElement
+@XmlRootElement(name = "bibRecord")
 public class BibRecord {
 
   private Bib bib;

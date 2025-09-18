@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import java.util.List;
 
-@XmlRootElement
+@XmlRootElement(name = "holding")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Holding {
 
