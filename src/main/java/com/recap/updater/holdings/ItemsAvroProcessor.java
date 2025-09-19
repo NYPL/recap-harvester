@@ -12,11 +12,11 @@ import org.apache.camel.impl.event.CamelContextStartedEvent;
 import org.apache.camel.support.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.support.RetryTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.recap.config.EnvironmentConfig;
@@ -24,12 +24,13 @@ import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Item;
 import com.recap.updater.utils.NYPLSchema;
 import com.recap.updater.utils.SchemaUtils;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ItemsAvroProcessor implements Processor {
 
   private static Logger logger = LoggerFactory.getLogger(ItemsAvroProcessor.class);
 
-  private String schemaJson;
   private NYPLSchema schema;
   private RetryTemplate retryTemplate;
   private ProducerTemplate producerTemplate;
@@ -41,12 +42,11 @@ public class ItemsAvroProcessor implements Processor {
     this.producerTemplate = producerTemplate;
   }
 
-  @EventListener(CamelContextStartedEvent.class)
+  @EventListener({CamelContextStartedEvent.class, ApplicationReadyEvent.class})
   public void initializeSchema() throws RecapHarvesterException {
       if (schema.getItemSchemaJson() == null) {
-        schema.setBibSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate, EnvironmentConfig.ITEM_SCHEMA_API));
+        schema.setItemSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate, EnvironmentConfig.ITEM_SCHEMA_API));
       }
-      schemaJson = schema.getItemSchemaJson();
   }
 
   @Override
@@ -56,7 +56,7 @@ public class ItemsAvroProcessor implements Processor {
       if (body != null && body.getClass() != DefaultMessage.class) {
         List<Item> items = exchange.getIn().getBody(List.class);
         List<byte[]> avroItems = new ArrayList<>();
-        Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
+        Schema schema = new Schema.Parser().setValidate(true).parse(this.schema.getItemSchemaJson());
         AvroSchema avroSchema = new AvroSchema(schema);
         AvroMapper avroMapper = new AvroMapper();
         String itemIds = "";
