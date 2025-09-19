@@ -25,6 +25,8 @@ public final class EnvironmentConfig {
 
   public static final String S3_SECRET_KEY = System.getenv(EnvironmentVariableNames.S3_SECRET_KEY);
 
+  public static final String S3_REGION = System.getenv(EnvironmentVariableNames.S3_REGION);
+
   public static final String S3_BASE_LOCATION =
       System.getenv(EnvironmentVariableNames.S3_BASE_LOCATION);
 

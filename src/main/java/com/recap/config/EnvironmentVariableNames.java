@@ -22,6 +22,8 @@ public class EnvironmentVariableNames {
 
   public static final String S3_SECRET_KEY = "s3SecretKey";
 
+  public static final String S3_REGION = "s3Region";
+
   public static final String ACCESSION_DIRECTORY = "accessionDirectory";
   
   public static final String ACCESSION_PROCESSED_DIRECTORY = "accessionProcessedDirectory";

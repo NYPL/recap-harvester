@@ -89,7 +89,8 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
       // Establish base URI for S3 endpoints
       String baseS3Uri = "aws2-s3://" + EnvironmentConfig.S3_BUCKET
           + "?accessKey=" + EnvironmentConfig.S3_ACCESS_KEY
-          + "&secretKey=" + EnvironmentConfig.S3_SECRET_KEY;
+          + "&secretKey=" + EnvironmentConfig.S3_SECRET_KEY
+          + "&region=" + EnvironmentConfig.S3_REGION;
 
       /**
        * Incremental Updates:
