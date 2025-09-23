@@ -28,6 +28,7 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.recap.config.EnvironmentConfig;
@@ -215,6 +216,8 @@ public class DeleteInfoProcessor implements Processor {
                     + owningInstitutionBibId);
               }
 
+            } catch (HttpServerErrorException e) {
+                logger.error("Server error ({}) : {}", e.getStatusCode(), e.getMessage());
             }
             return itemIds;
           }
