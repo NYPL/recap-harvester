@@ -47,7 +47,7 @@ public class CollectionType {
 
   private static final Logger LOG = LoggerFactory.getLogger(CollectionType.class);
 
-  @XmlElement(nillable = true)
+  @XmlElement(name = "record", nillable = true, namespace = "http://www.loc.gov/MARC21/slim")
   protected List<RecordType> record;
   @XmlAttribute(name = "id")
   @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
