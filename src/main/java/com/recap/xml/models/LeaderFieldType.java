@@ -32,7 +32,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "leaderFieldType", propOrder = {"value"})
+@XmlType(name = "leader", propOrder = {"value"})
 public class LeaderFieldType {
 
   @XmlValue

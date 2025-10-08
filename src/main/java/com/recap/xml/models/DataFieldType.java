@@ -37,10 +37,10 @@ import java.util.List;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "dataFieldType", propOrder = {"subfield"})
+@XmlType(name = "datafield", propOrder = {"subfield"})
 public class DataFieldType {
 
-  @XmlElement(required = true)
+  @XmlElement(required = true, namespace = "http://www.loc.gov/MARC21/slim")
   protected List<SubfieldatafieldType> subfield;
   @XmlAttribute(name = "id")
   @XmlJavaTypeAdapter(CollapsedStringAdapter.class)

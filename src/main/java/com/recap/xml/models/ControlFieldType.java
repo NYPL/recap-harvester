@@ -29,7 +29,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "controlFieldType", propOrder = {"value"})
+@XmlType(name = "controlfield", propOrder = {"value"})
 public class ControlFieldType {
 
   @XmlValue

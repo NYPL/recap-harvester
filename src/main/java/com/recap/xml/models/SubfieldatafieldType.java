@@ -27,7 +27,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "subfieldatafieldType", propOrder = {"value"})
+@XmlType(name = "subfield", propOrder = {"value"})
 public class SubfieldatafieldType {
 
   @XmlValue
