@@ -196,6 +196,20 @@ docker-compose logs -f recap-harvester
 docker-compose down
 ```
 
+#### Bulk-Import
+
+A special `docker-compose-bulk.yaml` exists to run the app locally (or on an EC2) in "bulk mode" over an arbitrarily large set of XML files. These may be obtained via a "Full" export of a partner's records from SCSB.
+
+1. `cp .env-local-bulk.sample .env-local-bulk` and fill in missing values
+2. Place the scsbxml *.xml files you want to ingest in `./bulk-import`
+3. Start it up:
+
+```
+docker compose -f docker-compose-bulk.yml up
+```
+
+Note that "Full" SCSB exports do not include deletions. After a comprehensive partner record ingest, we may need to remove stale records (i.e. remove records belonging to that partner whose updated timestamp indicates they were not updated by the ingest).
+
 ### CI/CD Pipeline
 
 The deployment pipeline typically follows these steps:

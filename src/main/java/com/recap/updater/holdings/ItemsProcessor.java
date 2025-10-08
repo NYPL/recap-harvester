@@ -36,13 +36,8 @@ public class ItemsProcessor implements Processor {
   public void process(Exchange exchange) {
     Map<String, Object> exchangeContents = (Map<String, Object>) exchange.getIn().getBody();
     List<Holding> listHolding = (List<Holding>) exchangeContents.get(Constants.LIST_HOLDING);
-
-    System.out.println("ItemsProcesor process: " + exchangeContents.keySet().toArray());
     Bib bib = (Bib) exchangeContents.get(Constants.BIB);
     List<Item> items = getListItems(listHolding, bib);
-    logger.info("Considering holding: (1) " + "string..");
-    logger.info("Considering holding: (2) " + new int[]{1, 2, 3});
-    logger.info("Considering holding: (3) " + bib + listHolding);
     exchangeContents.put(Constants.LIST_ITEMS, items);
     exchange.getIn().setBody(items);
     logger.info("Processing items for bib - " + bib.getNyplSource() + " " + bib.getId() + " (" + items.size() + " items)");

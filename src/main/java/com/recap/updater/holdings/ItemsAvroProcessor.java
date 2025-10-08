@@ -56,7 +56,6 @@ public class ItemsAvroProcessor implements Processor {
       if (body != null && body.getClass() != DefaultMessage.class) {
         List<Item> items = exchange.getIn().getBody(List.class);
         List<byte[]> avroItems = new ArrayList<>();
-        logger.info("Handling " + avroItems.size() + " items");
         Schema schema = new Schema.Parser().setValidate(true).parse(this.schema.getItemSchemaJson());
         AvroSchema avroSchema = new AvroSchema(schema);
         AvroMapper avroMapper = new AvroMapper();

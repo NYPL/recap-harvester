@@ -149,7 +149,6 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
         })
           .to(baseS3Uri + "&operation=copyObject");
 
-
       // Loop over downloaded-updates/SCSBXML
       // .. Doing the same thing as above? (For each zip, renames enclosed xml to a random uuid xml filename?)
       // Writes xmls to downloaded-updates/SCSBXML
@@ -169,7 +168,6 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
                   }
                 }
               }).to("file:" + Constants.DOWNLOADED_UPDATES_ACCESSION_DIR).end();
-
 
 
       // For each xml in downloaded-updates/SCSBXML
