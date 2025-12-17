@@ -22,8 +22,6 @@ RUN ./gradlew build --no-daemon
 # ----- Stage 2: Create the final, lightweight image -----
 FROM eclipse-temurin:17-jdk-alpine
 
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
 # Copy *only* the built application JAR from the 'builder' stage
