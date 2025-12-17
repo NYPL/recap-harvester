@@ -31,6 +31,10 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Decode .env file
+        run: |
+          echo "${{ secrets.ENV_FILE_ENCODED_QA }}" | base64 -d > .env
       
       - name: Build Docker image
         env:
@@ -38,6 +42,7 @@ jobs:
           ECR_REPOSITORY: recap-harvester
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          source .env
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:qa-latest
       
