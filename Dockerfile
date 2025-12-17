@@ -1,5 +1,5 @@
 # ----- Stage 1: Build the application -----
-FROM openjdk:17-slim AS builder
+FROM eclipse-temurin:17-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN ./gradlew build --no-daemon
 
 
 # ----- Stage 2: Create the final, lightweight image -----
-FROM openjdk:17-slim
+FROM eclipse-temurin:17-jdk-alpine
 
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
