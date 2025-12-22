@@ -146,42 +146,20 @@ This app is deployed automatically by CI/CD when updates are made to the `qa` or
 
 The application runs as a Docker container on AWS ECS (Elastic Container Service) with images stored in ECR (Elastic Container Registry).
 
-#### Docker Build
-```bash
-# Build the application
-./gradlew clean build
-
-# Build Docker image
-docker build -t recap-harvester .
-
-# Tag for ECR (replace with your actual ECR repository URI)
-docker tag recap-harvester:latest [account-id].dkr.ecr.us-east-1.amazonaws.com/recap-harvester:latest
-```
-
 #### ECR Push
 ```bash
 # Login to ECR
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin [account-id].dkr.ecr.us-east-1.amazonaws.com
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 946183545209.dkr.ecr.us-east-1.amazonaws.com
 
-# Push to ECR
-docker push [account-id].dkr.ecr.us-east-1.amazonaws.com/recap-harvester:latest
-```
+# Build and tag local Docker image
+docker build -t recap-harvester:local .
 
-### Manual Deployment (if needed)
+# Use current commit sha as image tag
+export IMAGE_TAG=$(git rev-parse --short HEAD)
 
-#### Using AWS CLI
-```bash
-# Update ECS service with new task definition
-aws ecs update-service \
-  --cluster recap-harvester-cluster \
-  --service recap-harvester-service \
-  --task-definition recap-harvester:latest \
-  --force-new-deployment
-
-# Monitor deployment status
-aws ecs describe-services \
-  --cluster recap-harvester-cluster \
-  --services recap-harvester-service
+# Tag and push for ECR
+docker tag recap-harvester:local 946183545209.dkr.ecr.us-east-1.amazonaws.com/recap-harvester:$IMAGE_TAG
+docker push 946183545209.dkr.ecr.us-east-1.amazonaws.com/recap-harvester:$IMAGE_TAG
 ```
 
 #### Using Docker Compose (Local Testing)
