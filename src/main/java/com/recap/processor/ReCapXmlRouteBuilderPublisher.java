@@ -287,15 +287,23 @@ public class ReCapXmlRouteBuilderPublisher extends RouteBuilder {
     } else {
       String scsbexportstaging =
           System.getenv(EnvironmentVariableNames.SCSB_EXPORT_STAGING_LOCATION);
-      from("file:" + scsbexportstaging + "?delete=true&maxMessagesPerPoll=1")
-          .split(body().tokenizeXML("bibRecord", "")).streaming()
-          .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
+
+      // For each xml in bulk-import
+      // For each bibRecord in the document, write to `direct:bib` and `direct:item`
+      from("file:" + scsbexportstaging
+        + "?delete=true&maxMessagesPerPoll=1&eagerMaxMessagesPerPoll=false&recursive=true&include=.*.xml")
+            .process(new Processor() {
+              @Override
+              public void process(Exchange exchange) throws Exception {
+                String fileName = (String) exchange.getIn().getHeader("CamelFileName");
+                logger.info("Bulk: Processing " + fileName);
+              }
+            })
+              .split(body().tokenizeXML("bibRecord", "")).streaming()
+              .unmarshal("getBibRecordJaxbDataFormat").multicast().to("direct:bib", "direct:item");
     }
 
-
-
     from("direct:bib").process(new BibProcessor(baseConfig)).process(new Processor() {
-
       @Override
       public void process(Exchange exchange) throws Exception {
         Bib bib = exchange.getIn().getBody(Bib.class);
