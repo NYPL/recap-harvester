@@ -179,10 +179,11 @@ docker-compose down
 A special `docker-compose-bulk.yaml` exists to run the app locally (or on an EC2) in "bulk mode" over an arbitrarily large set of XML files. These may be obtained via a "Full" export of a partner's records from SCSB.
 
 1. `cp .env-local-bulk.sample .env-local-bulk` and fill in missing values
-2. Place the scsbxml *.xml files you want to ingest in `./bulk-import`
+2. Place the scsbxml *.xml files you want to ingest in `./bulk-import` (Note that these will be deleted after processing, so keep a copy if you need it later.)
 3. Start it up:
 
 ```
+aws configure export-credentials --profile nypl-digital-dev --format env-no-export > .aws-creds
 docker compose -f docker-compose-bulk.yml up
 ```
 
