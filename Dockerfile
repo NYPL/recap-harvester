@@ -1,5 +1,5 @@
 # ----- Stage 1: Build the application -----
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN ./gradlew build --no-daemon
 
 
 # ----- Stage 2: Create the final, lightweight image -----
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
