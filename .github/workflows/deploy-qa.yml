@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - qa
-      - gradle_refactor # DO NOT MERGE -- Just to test QA deploy
 
 jobs:
   test:
