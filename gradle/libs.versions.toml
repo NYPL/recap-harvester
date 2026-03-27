@@ -2,7 +2,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-com-fasterxml-jackson-core-jackson-databind = "2.19.0"
+com-fasterxml-jackson-core-jackson-databind = "2.21.2"
 com-fasterxml-jackson-dataformat-jackson-dataformat-avro = "2.8.5"
 com-github-stefanbirkner-system-rules = "1.16.0"
 com-google-guava-guava = "33.4.8-jre"
