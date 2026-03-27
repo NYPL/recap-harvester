@@ -17,13 +17,15 @@ public final class EnvironmentConfig {
           + System.getenv(EnvironmentVariableNames.ITEM_SCHEMA_PATH);
 
   public static final Boolean ONLY_DO_UPDATES =
-      Boolean.valueOf(System.getenv(EnvironmentVariableNames.ONLY_DO_UPDATES).toLowerCase().trim());
+      Boolean.valueOf(System.getenv(EnvironmentVariableNames.ONLY_DO_UPDATES));
 
   public static final String S3_BUCKET = System.getenv(EnvironmentVariableNames.S3_BUCKET);
 
   public static final String S3_ACCESS_KEY = System.getenv(EnvironmentVariableNames.S3_ACCESS_KEY);
 
   public static final String S3_SECRET_KEY = System.getenv(EnvironmentVariableNames.S3_SECRET_KEY);
+
+  public static final String S3_REGION = System.getenv(EnvironmentVariableNames.S3_REGION);
 
   public static final String S3_BASE_LOCATION =
       System.getenv(EnvironmentVariableNames.S3_BASE_LOCATION);

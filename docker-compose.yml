@@ -1,0 +1,12 @@
+services:
+  recap-harvester:
+    build:
+      context: .
+      secrets:
+        - env_file
+    ports:
+      - "8080:8080"
+
+secrets:
+  env_file:
+    file: .env-local-export

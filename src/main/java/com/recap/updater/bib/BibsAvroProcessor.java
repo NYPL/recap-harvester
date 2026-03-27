@@ -1,7 +1,5 @@
 package com.recap.updater.bib;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,13 +8,15 @@ import org.apache.avro.Schema;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.impl.DefaultMessage;
+import org.apache.camel.impl.event.CamelContextStartedEvent;
+import org.apache.camel.support.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.retry.support.RetryTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroMapper;
 import com.fasterxml.jackson.dataformat.avro.AvroSchema;
 import com.recap.config.EnvironmentConfig;
@@ -24,20 +24,31 @@ import com.recap.exceptions.RecapHarvesterException;
 import com.recap.models.Bib;
 import com.recap.updater.utils.NYPLSchema;
 import com.recap.updater.utils.SchemaUtils;
+import org.springframework.stereotype.Component;
 
+import static com.recap.config.EnvironmentConfig.BIB_SCHEMA_API;
 
+@Component
 public class BibsAvroProcessor implements Processor {
 
-  private String schemaJson;
+  private NYPLSchema schema;
+  private RetryTemplate retryTemplate;
+  private ProducerTemplate producerTemplate;
 
   private static Logger logger = LoggerFactory.getLogger(BibsAvroProcessor.class);
 
   public BibsAvroProcessor(NYPLSchema schema, RetryTemplate retryTemplate,
-      ProducerTemplate producerTemplate) throws RecapHarvesterException {
-    if (schema.getBibSchemaJson() == null)
-      schema.setBibSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate,
-          EnvironmentConfig.BIB_SCHEMA_API));
-    schemaJson = schema.getBibSchemaJson();
+    ProducerTemplate producerTemplate) {
+    this.schema = schema;
+    this.retryTemplate = retryTemplate;
+    this.producerTemplate = producerTemplate;
+  }
+
+  @EventListener({CamelContextStartedEvent.class, ApplicationReadyEvent.class})
+  public void initializeSchema() throws RecapHarvesterException {
+    if (schema.getBibSchemaJson() == null) {
+      schema.setBibSchemaJson(new SchemaUtils().getSchema(retryTemplate, producerTemplate, EnvironmentConfig.BIB_SCHEMA_API));
+    }
   }
 
   @Override
@@ -50,7 +61,7 @@ public class BibsAvroProcessor implements Processor {
         String bibIds = "";
         for (Bib bib : bibs) {
           bibIds += bib.getId() + ", ";
-          Schema schema = new Schema.Parser().setValidate(true).parse(schemaJson);
+          Schema schema = new Schema.Parser().setValidate(true).parse(this.schema.getBibSchemaJson());
           AvroSchema avroSchema = new AvroSchema(schema);
           AvroMapper avroMapper = new AvroMapper();
           byte[] avroBib = avroMapper.writer(avroSchema).writeValueAsBytes(bib);

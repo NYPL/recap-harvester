@@ -7,8 +7,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.recap.exceptions.RecapHarvesterException;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@ComponentScan
 public class HarvesterApplication {
 
   private static Logger logger = LoggerFactory.getLogger(HarvesterApplication.class);

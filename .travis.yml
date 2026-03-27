@@ -1,6 +1,8 @@
 language: java
+jdk:
+- openjdk17
 install:
-- mvn clean package
+- ./gradlew clean build
 deploy:
 - provider: elasticbeanstalk
   skip_cleanup: true

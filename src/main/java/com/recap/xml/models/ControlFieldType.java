@@ -1,9 +1,9 @@
 
 package com.recap.xml.models;
 
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "controlFieldType", propOrder = {"value"})
+@XmlType(name = "controlfield", propOrder = {"value"})
 public class ControlFieldType {
 
   @XmlValue

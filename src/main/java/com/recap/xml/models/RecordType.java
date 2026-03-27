@@ -1,9 +1,9 @@
 
 package com.recap.xml.models;
 
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +35,13 @@ import java.util.List;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "recordType", propOrder = {"leader", "controlfield", "datafield"})
+@XmlType(name = "record", propOrder = {"leader", "controlfield", "datafield"})
 public class RecordType {
-
+  @XmlElement(name = "leader", namespace = "http://www.loc.gov/MARC21/slim")
   protected LeaderFieldType leader;
+  @XmlElement(name = "controlfield", namespace = "http://www.loc.gov/MARC21/slim")
   protected List<ControlFieldType> controlfield;
+  @XmlElement(name = "datafield", namespace = "http://www.loc.gov/MARC21/slim")
   protected List<DataFieldType> datafield;
   @XmlAttribute(name = "type")
   protected RecordTypeType type;

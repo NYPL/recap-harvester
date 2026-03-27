@@ -1,17 +1,17 @@
 package com.recap.xml.models;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "content", propOrder = {"collection"})
 
 @XmlRootElement(name = "content")
 public class ContentType {
-  @XmlElement(required = true, nillable = true)
+  @XmlElement(required = true, nillable = true, namespace = "http://www.loc.gov/MARC21/slim")
   protected CollectionType collection;
 
   public CollectionType getCollection() {

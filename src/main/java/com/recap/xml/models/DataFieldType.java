@@ -1,9 +1,9 @@
 
 package com.recap.xml.models;
 
-import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +37,10 @@ import java.util.List;
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "dataFieldType", propOrder = {"subfield"})
+@XmlType(name = "datafield", propOrder = {"subfield"})
 public class DataFieldType {
 
-  @XmlElement(required = true)
+  @XmlElement(required = true, namespace = "http://www.loc.gov/MARC21/slim")
   protected List<SubfieldatafieldType> subfield;
   @XmlAttribute(name = "id")
   @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
