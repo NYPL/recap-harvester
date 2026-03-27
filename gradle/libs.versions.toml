@@ -3,7 +3,7 @@
 
 [versions]
 com-fasterxml-jackson-core-jackson-databind = "2.19.0"
-com-fasterxml-jackson-dataformat-jackson-dataformat-avro = "2.8.5"
+com-fasterxml-jackson-dataformat-jackson-dataformat-avro = "2.21.2"
 com-github-stefanbirkner-system-rules = "1.16.0"
 com-google-guava-guava = "33.4.8-jre"
 commons-io-commons-io = "2.14.0"
