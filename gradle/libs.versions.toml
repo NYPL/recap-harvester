@@ -11,7 +11,7 @@ javax-xml-bind-jaxb-api = "2.3.1"
 org-apache-camel-bom = "4.13.0"
 org-apache-camel-camel-jaxb = "4.13.0"
 org-mockito-mockito-core = "1.10.19"
-org-springframework-retry-spring-retry = "1.1.4.RELEASE"
+org-springframework-retry-spring-retry = "2.0.12"
 org-springframework-security-oauth-spring-security-oauth2 = "2.5.2.RELEASE"
 jaxb-legacy = "2.3.1"
 
