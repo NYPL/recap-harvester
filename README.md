@@ -30,7 +30,16 @@ Gradle Wrapper is included in the project, so no separate Gradle installation is
 ## Setup
 
 ### Environment Configuration
-Copy the sample environment file and configure it for your environment:
+
+App config for deployed containers is maintained in Github secrets.
+
+A copy of deployment env files is stored in Parameter Store in nypl-digital-dev:
+ - [qa](https://us-east-1.console.aws.amazon.com/systems-manager/parameters/%252Fqa%252Frecapharvester%252Fenv_file/description?region=us-east-1&tab=Table#list_parameter_filters=Name:%3A:recapharvester)
+ - [production](https://us-east-1.console.aws.amazon.com/systems-manager/parameters/%252Fproduction%252Frecapharvester%252Fenv_file/description?region=us-east-1&tab=Table#list_parameter_filters=Name:%3A:recapharvester)
+
+Place the contents of those entries in your `.env` to replicate running each environment locally.
+
+Alternatively, to make the dotenv by hand, copy the sample environment file and configure it for your environment:
 
 ```bash
 cp .env-local-export.sample .env-local-export
