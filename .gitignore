@@ -44,3 +44,9 @@ downloaded-updates/SCSBXML/*.xml
 .env-local-export
 
 **/.DS_Store
+
+
+# Terraform
+.terraform*
+*.hcl
+*.tfstate
