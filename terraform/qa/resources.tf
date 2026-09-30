@@ -4,7 +4,7 @@ provider "aws" {
 
 variable "environment" {
   type    = string
-  default = "production"
+  default = "qa"
 }
 
 module "base" {

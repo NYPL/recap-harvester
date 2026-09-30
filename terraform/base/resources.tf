@@ -33,5 +33,5 @@ variable "environment" {
 
 output "log_group_name" {
   value       = local.log_group_name
-  description = "The ECS task's CloudWatch log group name for this environment."
+  description = "CloudWatch log group name for this environment."
 }

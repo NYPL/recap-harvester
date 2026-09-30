@@ -111,11 +111,11 @@ The app connects to an S3 bucket managed by SCSB to retrieve partner bib and ite
 
 ## Monitoring
 
-The app is monitored by a [CloudWatch alarm](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#alarmsV2:alarm/RecapHarvesterNotProcessingBibs-production). The alarm fires when the [RecapHarvesterBibProcessed-Production CW metric](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#metricsV2) <= 0 for 1 day.
+The app is monitored by a [CloudWatch alarm](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#alarmsV2:alarm/RecapHarvesterNotProcessingBibs-production). The alarm fires when the [RecapHarvesterBibProcessed metric](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#metricsV2?graph=~()&query=~'*7bLogMetrics*7d*20RecapHarvesterBibProcessed-) <= 0 for 1 day.
 
 ### How Monitoring Works:
 1. App logs "Processing bib - recap-" for each processed record
-2. A [metric filter](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups) converts log entries to metrics
+2. The metric filter converts log entries to metrics
 3. An [alarm](https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#alarmsV2:alarm/RecapHarvesterNotProcessingBibs-production) fires when metrics aren't written for 1 day
 
 ### False Positives:
