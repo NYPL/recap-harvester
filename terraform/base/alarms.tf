@@ -1,9 +1,9 @@
 data "aws_sns_topic" "rc_alarms" {
-  name = "research-catalog-team-alarms-production"
+  name = "research-catalog-team-alarms-${var.environment}"
 }
 
 resource "aws_cloudwatch_log_metric_filter" "bib_processed" {
-  log_group_name = module.base.log_group_name
+  log_group_name = local.log_group_name
   name           = "RecapHarvesterBibProcessed-${var.environment}"
   pattern        = "\"Processing bib\""
   region         = "us-east-1"
@@ -28,5 +28,5 @@ resource "aws_cloudwatch_metric_alarm" "not_processing_bibs" {
   statistic           = "Sum"
   threshold           = 0
   treat_missing_data  = "breaching"
-  alarm_actions = [data.aws_sns_topic.rc_alarms.arn]
+  alarm_actions       = [data.aws_sns_topic.rc_alarms.arn]
 }
