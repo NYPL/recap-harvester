@@ -1,24 +1,24 @@
 data "aws_sns_topic" "rc_alarms" {
-  name = "research-catalog-team-alarms-${var.environment}"
+  name = "research-catalog-team-alarms-production"
 }
 
 resource "aws_cloudwatch_log_metric_filter" "bib_processed" {
-  log_group_name = local.log_group_name
-  name           = "RecapHarvesterBibProcessed-${var.environment}"
+  log_group_name = module.base.log_group_name
+  name           = "RecapHarvesterBibProcessed-production"
   pattern        = "\"Processing bib\""
   region         = "us-east-1"
 
   metric_transformation {
-    name      = "RecapHarvesterBibProcessed-${var.environment}"
+    name      = "RecapHarvesterBibProcessed-production"
     namespace = "LogMetrics"
     unit      = "None"
     value     = "1"
   }
 }
 
-# Alarm when RecapHarvesterBibProcessed-${var.environment} <= 0 for 1 day (no bibs processed)
+# Alarm when RecapHarvesterBibProcessed-production <= 0 for 1 day (no bibs processed)
 resource "aws_cloudwatch_metric_alarm" "not_processing_bibs" {
-  alarm_name          = "RecapHarvesterNotProcessingBibs-${var.environment}"
+  alarm_name          = "RecapHarvesterNotProcessingBibs-production"
   alarm_description   = "ReCAP Harvester Poller has not processed any bibs in the last day."
   comparison_operator = "LessThanOrEqualToThreshold"
   evaluation_periods  = 1
